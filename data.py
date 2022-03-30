@@ -14,7 +14,7 @@ transformers = T.Compose([
     )
 ])
 
-cifar100 = CIFAR100('dataset', train=True, download=True, transform=transformers)
+cifar100 = CIFAR100('.dataset', train=True, download=True, transform=transformers)
 
 dataset_size = len(cifar100)
 
