@@ -1,0 +1,4 @@
+{
+    "batch_size": 32,
+    "n_worker": 4
+}
