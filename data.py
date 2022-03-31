@@ -29,12 +29,19 @@ train, val, test = random_split(cifar100, [train_size, val_size, test_size],
 
 batch_size = 64
 n_workers = os.cpu_count()
-loader = {}
-loader['train'] = DataLoader(train, batch_size=batch_size, shuffle=True, 
+loaders = {}
+loaders['train'] = DataLoader(train, batch_size=batch_size, shuffle=True, 
                           num_workers=n_workers, generator=generator, pin_memory= True)
-loader['val'] = DataLoader(val, batch_size=batch_size, shuffle=True, 
+loaders['val'] = DataLoader(val, batch_size=batch_size, shuffle=True, 
                           num_workers=n_workers, generator=generator, pin_memory= True)
-loader['test'] = DataLoader(val, batch_size=batch_size, shuffle=False, 
+loaders['test'] = DataLoader(test, batch_size=batch_size, shuffle=False, 
                           num_workers=n_workers, generator=generator, pin_memory= True)
+
+dataset_sizes = {
+    'train': len(train),
+    'val': len(val),
+    'test': len(test),
+}
+
 
 del generator
