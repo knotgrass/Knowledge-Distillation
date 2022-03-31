@@ -10,13 +10,14 @@ from tqdm import tqdm
 from time import time
 
 from data import loaders, dataset_sizes
+from loss import loss_function_kd
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 def train(student, best_student, best_acc, 
           criterion, optimizer, scheduler, 
-          epochs, path_save_weight:str):
+          teacher, epochs, path_save_weight:str):
     since = time()
     
     for epoch in range(epochs):
@@ -33,15 +34,15 @@ def train(student, best_student, best_acc,
                 optimizer.zero_grad()
 
                 with torch.set_grad_enabled(phase == 'train'):
-                    outp = student(datas)
-                    _, pred = torch.max(outp, 1)
-                    loss = criterion(outp, targets)
-
+                    outp_Student = student(datas)
+                    outp_Teacher = teacher(datas)
+                    
+                    loss = criterion(outp_Student, targets, outp_Teacher, 
+                                     T = 6, alpha = 0.1)
+                    _, pred = torch.max(outp_Student, 1)
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-                        # lr.append(scheduler.get_lr())
-                        # scheduler.step()
 
                 running_loss += loss.item()*datas.size(0)
                 running_corrects += torch.sum(pred == targets.data)
@@ -77,14 +78,15 @@ def train_kd(epochs:int, student:nn.Module, teacher:nn.Module, path_save_weight:
         if os.path.isdir('Weights'):
             os.makedirs('Weights')
         path_save_weight = os.path.join('Weights', student.__class__.__name__ + '.pth')
-    print('Training a model {} using {}'.format(student.__class__.__name__, device))
+    print('Training a model {} using {}'.format(
+        student.__class__.__name__, device))
 
     student.to(device); teacher.to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(student.head.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=3, verbose=True)
-    #scheduler = lr_scheduler.OneCycleLR(optimizer, 0.1, epochs=epochs, steps_per_epoch=len(loaders['train']), cycle_momentum=True)
-    #scheduler = lr_scheduler.StepLR(optimizer, 3, gamma=0.1)
+    criterion = loss_function_kd
+    optimizer = optim.Adam(student.head.parameters(), lr=0.001, 
+                           betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', 
+                                               factor=0.1, patience=3, verbose=True)
     
     since = time()
     best_student = copy.deepcopy(student.state_dict())
@@ -92,7 +94,7 @@ def train_kd(epochs:int, student:nn.Module, teacher:nn.Module, path_save_weight:
     
     best_student, best_acc = train(student, best_student, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs, path_save_weight)
+                                   teacher, epochs, path_save_weight)
 
     time_elapsed = time() - since
     print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(time_elapsed//60, time_elapsed % 60))
@@ -108,12 +110,10 @@ def train_kd(epochs:int, student:nn.Module, teacher:nn.Module, path_save_weight:
 
     optimizer = optim.Adam(student.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=2, verbose=True)
-    #scheduler = lr_scheduler.StepLR(optimizer, 3, gamma=0.1)
-    #scheduler = lr_scheduler.OneCycleLR(optimizer, 0.001, epochs=epochs, steps_per_epoch=len(loaders['train']), cycle_momentum=True)
     
     best_student, best_acc = train(student, best_student, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs, path_save_weight)
+                                   teacher, epochs, path_save_weight)
 
     time_elapsed = time() - since
     print('ALL NET TRAINING TIME {} m {:.3f}s'.format(time_elapsed//60, time_elapsed % 60))
