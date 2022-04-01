@@ -1,7 +1,7 @@
-import torch
+
 import torch.nn as nn
 import torch.nn.functional as F
-Tensor = torch.Tensor
+from torch import Tensor
 
 # hyperparameters for KD
 alphas = [0.99, 0.95, 0.5, 0.1, 0.05]
