@@ -40,8 +40,6 @@ def train(student, best_student, best_acc,
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-                        # lr.append(scheduler.get_lr())
-                        # scheduler.step()
 
                 running_loss += loss.item()*datas.size(0)
                 running_corrects += torch.sum(pred == targets.data)
@@ -56,7 +54,8 @@ def train(student, best_student, best_acc,
             if phase == 'train':
                 print(Fore.RED)
                 print('Epoch: {}/{}'.format(epoch+1, epochs), Fore.RESET)
-            print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(phase, epoch_loss, 100*epoch_acc))
+            print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
+                phase, epoch_loss, 100*epoch_acc))
 
             if phase == 'val':
                 print('Time: {}m {:.3f}s'.format(
