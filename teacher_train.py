@@ -71,17 +71,21 @@ def train(student, best_student, best_acc,
     return best_student, best_acc
 
 
-def training(epochs:int, teacher:nn.Module, path_save_weight:str=None):
+def training(epochs_freeze:int, epochs_unfreeze:int, 
+             teacher:nn.Module, path_save_weight:str=None):
     if path_save_weight is None:
         if os.path.isdir('Weights'):
             os.makedirs('Weights')
-        path_save_weight = os.path.join('Weights', teacher.__class__.__name__ + '.pth')
-    print('Training a model {} using {}'.format(teacher.__class__.__name__, device))
+        path_save_weight = os.path.join(
+            'Weights', teacher.__class__.__name__ + '.pth')
+    print('Training {} using {}'.format(teacher.__class__.__name__, device))
 
     teacher.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(teacher.head.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=3, verbose=True)
+    optimizer = optim.Adam(list(teacher.children())[-1].parameters(), lr=0.001, 
+                           betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', 
+                                               factor=0.1, patience=3, verbose=True)
     #scheduler = lr_scheduler.OneCycleLR(optimizer, 0.1, epochs=epochs, steps_per_epoch=len(loaders['train']), cycle_momentum=True)
     #scheduler = lr_scheduler.StepLR(optimizer, 3, gamma=0.1)
     
@@ -91,13 +95,13 @@ def training(epochs:int, teacher:nn.Module, path_save_weight:str=None):
     
     best_teacher, best_acc = train(teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs, path_save_weight)
+                                   epochs_freeze, path_save_weight)
 
     time_elapsed = time() - since
-    print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(time_elapsed//60, time_elapsed % 60))
-    print(Fore.RED)
-    print('Unfreeze all layers of {} model'.format(teacher.__class__.__name__))
-    print('=='*22, Fore.RESET, '\n')
+    print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
+        time_elapsed//60, time_elapsed % 60))
+    print(Fore.RED, '\n', 'Unfreeze all layers of {} model'.format(
+        teacher.__class__.__name__), '\n', '=='*22, Fore.RESET, '\n')
 
     teacher.load_state_dict(best_teacher)
 
@@ -110,7 +114,7 @@ def training(epochs:int, teacher:nn.Module, path_save_weight:str=None):
     
     best_teacher, best_acc = train(teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs, path_save_weight)
+                                   epochs_unfreeze, path_save_weight)
 
     time_elapsed = time() - since
     print('ALL NET TRAINING TIME {} m {:.3f}s'.format(time_elapsed//60, time_elapsed % 60))

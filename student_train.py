@@ -15,9 +15,9 @@ from loss import loss_function_kd
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
-def train_kd(student, best_student, best_acc, 
-          criterion, optimizer, scheduler, 
-          teacher, epochs, path_save_weight:str):
+def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float, 
+          criterion=loss_function_kd, optimizer= ..., scheduler= ..., 
+          teacher:nn.Module= ..., epochs:int= 12, path_save_weight:str= ...):
     since = time()
     
     for epoch in range(epochs):
@@ -75,7 +75,8 @@ def train_kd(student, best_student, best_acc,
 
 
 def training_kd(student:nn.Module, teacher:nn.Module, 
-                epochs:int,  path_save_weight:str=None):
+                epochs_freeze:int = 8, epochs_unfreeze:int = 12, 
+                path_save_weight:str=None):
     
     if path_save_weight is None:
         if os.path.isdir('Weights'):
@@ -87,7 +88,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
 
     student.to(device); teacher.to(device).eval()
     criterion = loss_function_kd
-    optimizer = optim.Adam(student.head.parameters(), lr=0.001, 
+    optimizer = optim.Adam(list(student.children())[-1].parameters(), lr=0.001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, 
                                                patience=3, verbose=True)
@@ -98,7 +99,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
     
     best_student, best_acc = train_kd(student, best_student, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   teacher, epochs, path_save_weight)
+                                   teacher, epochs_freeze, path_save_weight)
 
     time_elapsed = time() - since
     print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
@@ -119,11 +120,11 @@ def training_kd(student:nn.Module, teacher:nn.Module,
     
     best_student, best_acc = train_kd(student, best_student, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   teacher, epochs, path_save_weight)
-
+                                   teacher, epochs_unfreeze, path_save_weight)
+    
+    torch.save(best_student.state_dict(), path_save_weight)
     time_elapsed = time() - since
     print('ALL NET TRAINING TIME {} m {:.3f}s'.format(
         time_elapsed//60, time_elapsed % 60))
 
-    torch.save(best_student.state_dict(), path_save_weight)
     return best_student
