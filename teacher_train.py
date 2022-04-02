@@ -115,10 +115,9 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     best_teacher, best_acc = train(teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
                                    epochs_unfreeze, path_save_weight)
-
+    
+    torch.save(best_teacher.state_dict(), path_save_weight)
     time_elapsed = time() - since
     print('ALL NET TRAINING TIME {} m {:.3f}s'.format(time_elapsed//60, time_elapsed % 60))
 
-    # best_teacher.load_state_dict(best_teacher)
-    torch.save(best_teacher.state_dict(), path_save_weight)
     return best_teacher
