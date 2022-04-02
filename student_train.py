@@ -10,13 +10,13 @@ from tqdm import tqdm
 from time import time
 
 from data import loaders, dataset_sizes
-from loss import loss_function_kd
+from loss import loss_fn_kd
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float, 
-          criterion=loss_function_kd, optimizer= ..., scheduler= ..., 
+          criterion=loss_fn_kd, optimizer= ..., scheduler= ..., 
           teacher:nn.Module= ..., epochs:int= 12, path_save_weight:str= ...):
     since = time()
     
@@ -87,10 +87,10 @@ def training_kd(student:nn.Module, teacher:nn.Module,
         student.__class__.__name__, device))
 
     student.to(device); teacher.to(device).eval()
-    criterion = loss_function_kd
+    criterion = loss_fn_kd
     optimizer = optim.Adam(list(student.children())[-1].parameters(), lr=0.001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, 
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, 
                                                patience=3, verbose=True)
     
     since = time()
@@ -115,7 +115,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
 
     optimizer = optim.Adam(student.parameters(), lr=0.0001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, 
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, 
                                                patience=2, verbose=True)
     
     best_student, best_acc = train_kd(student, best_student, best_acc, 

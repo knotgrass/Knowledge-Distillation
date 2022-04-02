@@ -65,7 +65,7 @@ def train(student, best_student, best_acc,
                 best_acc = epoch_acc
                 best_student = copy.deepcopy(student.state_dict())
 
-                torch.save(student.state_dict(), path_save_weight)    # save check point
+                torch.save(student.state_dict(), path_save_weight)
         # scheduler.step()
         
     return best_student, best_acc
@@ -85,9 +85,7 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     optimizer = optim.Adam(list(teacher.children())[-1].parameters(), lr=0.001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', 
-                                               factor=0.1, patience=3, verbose=True)
-    #scheduler = lr_scheduler.OneCycleLR(optimizer, 0.1, epochs=epochs, steps_per_epoch=len(loaders['train']), cycle_momentum=True)
-    #scheduler = lr_scheduler.StepLR(optimizer, 3, gamma=0.1)
+                                               factor=0.5, patience=3, verbose=True)
     
     since = time()
     best_teacher = copy.deepcopy(teacher.state_dict())
@@ -109,8 +107,10 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     for param in teacher.parameters():
         param.requires_grad = True
 
-    optimizer = optim.Adam(teacher.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=2, verbose=True)
+    optimizer = optim.Adam(teacher.parameters(), lr=0.0001, 
+                           betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, 
+                                               patience=2, verbose=True)
     
     best_teacher, best_acc = train(teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
@@ -118,6 +118,7 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     
     torch.save(best_teacher.state_dict(), path_save_weight)
     time_elapsed = time() - since
-    print('ALL NET TRAINING TIME {} m {:.3f}s'.format(time_elapsed//60, time_elapsed % 60))
+    print('ALL NET TRAINING TIME {} m {:.3f}s'.format(
+        time_elapsed//60, time_elapsed % 60))
 
     return best_teacher
