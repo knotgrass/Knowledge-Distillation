@@ -40,9 +40,9 @@ loaders['test'] = DataLoader(test, batch_size=batch_size, shuffle=False,
                              num_workers=n_workers, generator=generator, pin_memory=True)
 del generator
 dataset_sizes = {
-    'train': len(train),
-    'val': len(val),
-    'test': len(test),
+    'train': train.__len__(),
+    'val': val.__len__(),
+    'test': test.__len__(),
 }
 num_classes = len(cifar100.class_to_idx)
 

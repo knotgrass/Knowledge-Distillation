@@ -14,26 +14,26 @@ from data import loaders, dataset_sizes
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
-def train(student, best_student, best_acc, 
+def train(teacher, best_teacher, best_acc, 
           criterion, optimizer, scheduler, 
           epochs, path_save_weight:str):
     since = time()
     
     for epoch in range(epochs):
         for phase in ['train', 'val']:
-            if phase == 'train': student.train()
-            else:                student.eval()
+            if phase == 'train': teacher.train()
+            else:                teacher.eval()
 
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase]):
+            for datas, targets in tqdm(loaders[phase], ncols=64):
                 datas, targets = datas.to(device), targets.to(device)
 
                 optimizer.zero_grad()
 
                 with torch.set_grad_enabled(phase == 'train'):
-                    outp = student(datas)
+                    outp = teacher(datas)
                     _, pred = torch.max(outp, 1)
                     loss = criterion(outp, targets)
 
@@ -52,23 +52,21 @@ def train(student, best_student, best_acc,
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
             if phase == 'train':
-                print(Fore.RED)
-                print('Epoch: {}/{}'.format(epoch+1, epochs), Fore.RESET)
+                print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
+                    epoch+1, epochs), Fore.RESET, '='*38)
             print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
                 phase, epoch_loss, 100*epoch_acc))
 
             if phase == 'val':
                 print('Time: {}m {:.3f}s'.format(
                     int((time() - since)//60), (time() - since) % 60))
-                print('=='*22)
+                
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                best_student = copy.deepcopy(student.state_dict())
-
-                torch.save(student.state_dict(), path_save_weight)
-        # scheduler.step()
+                best_teacher = copy.deepcopy(teacher.state_dict())
+                torch.save(teacher.state_dict(), path_save_weight)
         
-    return best_student, best_acc
+    return best_teacher, best_acc
 
 
 def training(epochs_freeze:int, epochs_unfreeze:int, 
@@ -84,8 +82,8 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(list(teacher.children())[-1].parameters(), lr=0.001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', 
-                                               factor=0.5, patience=3, verbose=True)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, 
+                                               patience=3, verbose=True)
     
     since = time()
     best_teacher = copy.deepcopy(teacher.state_dict())

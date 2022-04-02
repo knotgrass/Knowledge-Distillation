@@ -28,7 +28,7 @@ def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float,
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase]):
+            for datas, targets in tqdm(loaders[phase], ncols=64):
                 datas, targets = datas.to(device), targets.to(device)
 
                 optimizer.zero_grad()
@@ -56,19 +56,17 @@ def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float,
 
             if phase == 'train':
                 print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
-                    epoch+1, epochs), Fore.RESET)
+                    epoch+1, epochs), Fore.RESET, '='*38)
             print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
                 phase, epoch_loss, 100*epoch_acc))
 
             if phase == 'val':
                 print('Time: {}m {:.3f}s'.format(
-                    int((time() - since)//60), (time() - since) % 60),
-                      '\n' ,'=='*22)
+                    int((time() - since)//60), (time() - since) % 60))
                 
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_student = copy.deepcopy(student.state_dict())
-
                 torch.save(student.state_dict(), path_save_weight)
         
     return best_student, best_acc
@@ -90,7 +88,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
     criterion = loss_fn_kd
     optimizer = optim.Adam(list(student.children())[-1].parameters(), lr=0.001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, 
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.2, 
                                                patience=3, verbose=True)
     
     since = time()
@@ -100,14 +98,14 @@ def training_kd(student:nn.Module, teacher:nn.Module,
     best_student, best_acc = train_kd(student, best_student, best_acc, 
                                    criterion, optimizer, scheduler, 
                                    teacher, epochs_freeze, path_save_weight)
-
+    
+    student.load_state_dict(best_student)
+    
     time_elapsed = time() - since
     print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
         time_elapsed//60, time_elapsed % 60))
     print(Fore.RED, '\n', f'Unfreeze all layers of {student.__class__.__name__}',
           '\n', '=='*22, Fore.RESET, '\n')
-
-    student.load_state_dict(best_student)
 
     # unfrezz all layer
     for param in student.parameters():
@@ -115,7 +113,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
 
     optimizer = optim.Adam(student.parameters(), lr=0.0001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, 
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, 
                                                patience=2, verbose=True)
     
     best_student, best_acc = train_kd(student, best_student, best_acc, 
@@ -123,6 +121,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
                                    teacher, epochs_unfreeze, path_save_weight)
     
     torch.save(best_student.state_dict(), path_save_weight)
+    
     time_elapsed = time() - since
     print('ALL NET TRAINING TIME {} m {:.3f}s'.format(
         time_elapsed//60, time_elapsed % 60))
