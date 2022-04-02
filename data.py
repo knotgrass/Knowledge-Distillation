@@ -1,9 +1,9 @@
 import os
 from colorama import Fore
 
-from torch import Generator
+from torch._C import Generator
 from torch.utils.data import DataLoader, random_split
-from torchvision.datasets import CIFAR100, ImageFolder
+from torchvision.datasets import CIFAR100#, ImageFolder
 import torchvision.transforms as T
 
 transformers = T.Compose([
