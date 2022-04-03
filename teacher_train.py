@@ -21,8 +21,12 @@ def train(teacher, best_teacher, best_acc,
     
     for epoch in range(epochs):
         for phase in ['train', 'val']:
-            if phase == 'train': teacher.train()
-            else:                teacher.eval()
+            if phase == 'train': 
+                teacher.train()
+                print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
+                    epoch+1, epochs), Fore.RESET, '='*44)
+            else:
+                teacher.eval()
 
             running_loss = 0.0
             running_corrects = 0.0
@@ -50,9 +54,6 @@ def train(teacher, best_teacher, best_acc,
             
             if phase == 'train':
                 scheduler.step(100. * epoch_acc) #acc
-                
-                print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
-                    epoch+1, epochs), Fore.RESET, '='*38)
                 
             print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
                 phase, epoch_loss, 100*epoch_acc))
