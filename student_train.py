@@ -28,7 +28,8 @@ def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float,
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase], desc= phase, ncols=64):
+            for datas, targets in tqdm(loaders[phase], 
+                                       desc=phase, ncols=64, colour='black'):
                 datas, targets = datas.to(device), targets.to(device)
 
                 optimizer.zero_grad()
@@ -40,29 +41,29 @@ def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float,
                     loss = criterion(outp_Student, targets, outp_Teacher, 
                                      T = 6, alpha = 0.1)
                     _, pred = torch.max(outp_Student, 1)
+                    
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
 
                 running_loss += loss.item()*datas.size(0)
                 running_corrects += torch.sum(pred == targets.data)
-
-            if phase == 'train':
-                acc = 100. * running_corrects.double() / dataset_sizes[phase]
-                scheduler.step(acc)
-
+                
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
-
+            
             if phase == 'train':
+                scheduler.step(100. * epoch_acc) #acc
+
                 print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
                     epoch+1, epochs), Fore.RESET, '='*38)
             print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
                 phase, epoch_loss, 100*epoch_acc))
 
             if phase == 'val':
+                time_elapsed = time() - since
                 print('Time: {}m {:.3f}s'.format(
-                    int((time() - since)//60), (time() - since) % 60))
+                    time_elapsed // 60, time_elapsed % 60))
                 
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
