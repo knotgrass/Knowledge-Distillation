@@ -11,6 +11,7 @@ from time import time
 
 from data import loaders, dataset_sizes
 from loss import loss_fn_kd
+from utils.print_utils import print_msg
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -86,7 +87,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
             os.makedirs('Weights')
         path_save_weight = os.path.join(
             'Weights', student.__class__.__name__ + '.pth')
-    print('Training a model {} using {}'.format(
+    print('Training {} using {}'.format(
         student.__class__.__name__, device))
 
     student.to(device); teacher.to(device).eval()
@@ -109,8 +110,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
     time_elapsed = time() - since
     print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
         time_elapsed//60, time_elapsed % 60))
-    print(Fore.RED, '\n', f'Unfreeze all layers of {student.__class__.__name__}',
-          '\n', '=='*22, Fore.RESET, '\n')
+    print_msg("Unfreeze all layers", teacher.__class__.__name__)
 
     # unfrezz all layer
     for param in student.parameters():

@@ -10,6 +10,7 @@ from tqdm import tqdm
 from time import time
 
 from data import loaders, dataset_sizes
+from utils.print_utils import print_msg
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -23,16 +24,16 @@ def train(teacher, best_teacher, best_acc,
         for phase in ['train', 'val']:
             if phase == 'train': 
                 teacher.train()
-                print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
-                    epoch+1, epochs), Fore.RESET, '='*44)
+                print(Fore.RED); print('Epoch : {:>2d}/{:2d}'.format(
+                    epoch+1, epochs), Fore.RESET, ' {:>48}'.format('='*46))
             else:
                 teacher.eval()
 
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase], 
-                                       desc=phase, ncols=64, colour='black'):
+            for datas, targets in tqdm(loaders[phase], ncols=64, colour='black', 
+                                       desc='{:6}'.format(phase).capitalize()):
                 datas, targets = datas.to(device), targets.to(device)
 
                 optimizer.zero_grad()
@@ -98,8 +99,7 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     time_elapsed = time() - since
     print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
         time_elapsed//60, time_elapsed % 60))
-    print(Fore.RED, '\n', 'Unfreeze all layers of {} model'.format(
-        teacher.__class__.__name__), '\n', '=='*22, Fore.RESET, '\n')
+    print_msg("Unfreeze all layers", teacher.__class__.__name__)
 
     teacher.load_state_dict(best_teacher)
 
