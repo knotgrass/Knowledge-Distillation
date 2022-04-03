@@ -24,23 +24,25 @@ def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float,
         for phase in ['train', 'val']:
             if phase == 'train': 
                 student.train()
-                print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
-                    epoch+1, epochs), Fore.RESET, '='*44)
+                print(Fore.RED); print('Epoch : {:>2d}/{:2d}'.format(
+                    epoch+1, epochs), Fore.RESET, ' {:>48}'.format('='*46))
             else:
                 student.eval()
 
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase], 
-                                       desc=phase, ncols=64, colour='black'):
+            for datas, targets in tqdm(loaders[phase], ncols=64, colour='black', 
+                                       desc='{:6}'.format(phase).capitalize()):
                 datas, targets = datas.to(device), targets.to(device)
-
+                
                 optimizer.zero_grad()
-
+                with torch.no_grad:
+                    outp_Teacher = teacher(datas)
+                
                 with torch.set_grad_enabled(phase == 'train'):
                     outp_Student = student(datas)
-                    outp_Teacher = teacher(datas)
+                    # outp_Teacher = teacher(datas)
                     
                     loss = criterion(outp_Student, targets, outp_Teacher, 
                                      T = 6, alpha = 0.1)
@@ -60,7 +62,7 @@ def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float,
                 scheduler.step(100. * epoch_acc) #acc
                 
             print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
-                phase, epoch_loss, 100*epoch_acc))
+                '{:6}'.format(phase).capitalize(), epoch_loss, 100*epoch_acc))
 
             if phase == 'val':
                 time_elapsed = time() - since
