@@ -28,7 +28,7 @@ def train_kd(student:nn.Module, best_student:nn.Module, best_acc:float,
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase], ncols=64):
+            for datas, targets in tqdm(loaders[phase], desc= phase, ncols=64):
                 datas, targets = datas.to(device), targets.to(device)
 
                 optimizer.zero_grad()

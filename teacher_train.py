@@ -27,7 +27,7 @@ def train(teacher, best_teacher, best_acc,
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase], ncols=64):
+            for datas, targets in tqdm(loaders[phase], desc=phase, ncols=64):
                 datas, targets = datas.to(device), targets.to(device)
 
                 optimizer.zero_grad()
@@ -49,7 +49,7 @@ def train(teacher, best_teacher, best_acc,
                 scheduler.step(acc)
 
             epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            epoch_acc = running_corrects.double() / dataset_sizes[phase]    #TODO
 
             if phase == 'train':
                 print(Fore.RED, '\n', 'Epoch: {}/{}'.format(
