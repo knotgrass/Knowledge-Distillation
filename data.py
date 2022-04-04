@@ -6,13 +6,13 @@ from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import CIFAR100#, ImageFolder
 import torchvision.transforms as T
 
+mean = (0.4915, 0.4823, 0.4468)
+std = (0.2470, 0.2435, 0.2616)
+
 transformers = T.Compose([
     T.Resize(size=(224, 224)),
     T.ToTensor(),
-    T.Normalize(
-        mean=(0.4915, 0.4823, 0.4468),
-        std=(0.2470, 0.2435, 0.2616)
-    )
+    T.Normalize(mean=mean, std=std)
 ])
 
 cifar100 = CIFAR100('.dataset', train=True,
