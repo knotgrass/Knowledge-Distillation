@@ -52,3 +52,92 @@ class_to_idx = cifar100.class_to_idx
 idx_to_class = {y: x for x, y in cifar100.class_to_idx.items()}
 # for k, v in index_to_class.items():
 #     print(k, v)
+
+
+#TODO
+# Write custom dataset 
+# kế thừa class CIFAR100
+# viết lại hàm __init__ và __getitem__ để lấy được outp_teacher
+# lưu lại outpTeacher với format giống target(label/gt)
+
+phase = 'train'
+from tqdm import tqdm
+for datas, targets , outp_Teacher in tqdm(loaders[phase], ncols=64, colour='black', 
+                            desc='{:6}'.format(phase).capitalize()):
+    ...
+# loader sẽ chạy trước 1 lượt, và save output ra ssd, khi cần sẽ load lên
+
+from PIL import Image
+from typing import Any, Callable, Optional, Tuple
+import pickle
+import numpy as np
+class CustomKDDataset(CIFAR100):
+    
+    def __init__(
+            self,
+            root: str,
+            train: bool = True,
+            transform: Optional[Callable] = None,
+            target_transform: Optional[Callable] = None,
+            download: bool = False,
+    ) -> None:
+
+        super(CustomKDDataset, self).__init__(root, transform=transform,
+                                      target_transform=target_transform)
+
+        self.train = train  # training set or test set
+
+        if download:
+            self.download()
+
+        if not self._check_integrity():
+            raise RuntimeError('Dataset not found or corrupted.' +
+                               ' You can use download=True to download it')
+
+        if self.train:
+            downloaded_list = self.train_list
+        else:
+            downloaded_list = self.test_list
+
+        self.data: Any = []
+        self.targets = []
+
+        # now load the picked numpy arrays
+        for file_name, checksum in downloaded_list:
+            file_path = os.path.join(self.root, self.base_folder, file_name)
+            with open(file_path, 'rb') as f:
+                entry = pickle.load(f, encoding='latin1')
+                self.data.append(entry['data'])
+                if 'labels' in entry:
+                    self.targets.extend(entry['labels'])
+                else:
+                    self.targets.extend(entry['fine_labels'])
+
+        self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
+        self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
+
+        self._load_meta()
+        
+    def __getitem__(self, index: int) -> Tuple[Any, Any, Any]:
+        """
+        Args:
+            index (int): Index
+
+        Returns:
+            tuple: (image, target, outp_Teacher) 
+            where target is index of the target class.
+            outp_Teacher is predict of teacher models
+        """
+        img, target = self.data[index], self.targets[index]
+
+        # doing this so that it is consistent with all other datasets
+        # to return a PIL Image
+        img = Image.fromarray(img)
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
