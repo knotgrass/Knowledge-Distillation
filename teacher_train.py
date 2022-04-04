@@ -24,7 +24,7 @@ def train(teacher, best_teacher, best_acc,
         for phase in ['train', 'val']:
             if phase == 'train': 
                 teacher.train()
-                print(Fore.RED); print('Epoch : {:>2d}/{:2d}'.format(
+                print(Fore.RED); print('Epoch : {:>2d}/{:<2d}'.format(
                     epoch+1, epochs), Fore.RESET, ' {:>48}'.format('='*46))
             else:
                 teacher.eval()
@@ -57,7 +57,7 @@ def train(teacher, best_teacher, best_acc,
                 scheduler.step(100. * epoch_acc) #acc
                 
             print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
-                phase, epoch_loss, 100*epoch_acc))
+                '{:5}'.format(phase).capitalize(), epoch_loss, 100*epoch_acc))
 
             if phase == 'val':
                 time_elapsed = time() - since

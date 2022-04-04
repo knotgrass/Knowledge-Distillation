@@ -28,7 +28,7 @@ def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
         for phase in ('train', 'val'):
             if phase == 'train': 
                 student.train()
-                print(Fore.RED); print('Epoch : {:>2d}/{:2d}'.format(
+                print(Fore.RED); print('Epoch : {:>2d}/{:<2d}'.format(
                     epoch+1, epochs), Fore.RESET, ' {:>48}'.format('='*46))
             else:
                 student.eval()
@@ -66,7 +66,7 @@ def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
                 scheduler.step(100. * epoch_acc) #acc
                 
             print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
-                '{:6}'.format(phase).capitalize(), epoch_loss, 100*epoch_acc))
+                '{:5}'.format(phase).capitalize(), epoch_loss, 100*epoch_acc))
 
             if phase == 'val':
                 time_elapsed = time() - since
