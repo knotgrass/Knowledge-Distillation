@@ -24,8 +24,8 @@ def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
     since = time()
     best_student = copy.deepcopy(student)
     
-    for epoch in range(epochs):
-        for phase in ['train', 'val']:
+    for epoch in range(epochs): 
+        for phase in ('train', 'val'):
             if phase == 'train': 
                 student.train()
                 print(Fore.RED); print('Epoch : {:>2d}/{:2d}'.format(

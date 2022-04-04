@@ -126,3 +126,4 @@ dmypy.json
 # folder data
 .dataset/
 zzzz.py
+weights/

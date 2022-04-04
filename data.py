@@ -29,7 +29,7 @@ generator.manual_seed(0)
 train, val, test = random_split(cifar100, [train_size, val_size, test_size],
                                 generator=generator)
 
-batch_size = 64
+batch_size = 32
 n_workers = os.cpu_count()
 loaders = {}
 loaders['train'] = DataLoader(train, batch_size=batch_size, shuffle=True,
