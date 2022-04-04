@@ -11,7 +11,7 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 
 
 #### TODO
-- [ ] write custom dataset for outp_Teacher, see data.py
+- [ ] write custom dataset for outp_Teacher, see [data.py](https://github.com/watson21/Knowledge-Distillation/blob/main/data.py#L74)
 - [ ] write metric to caculator in training, accuracy, precision, recall, F1-score, see [link](https://machinelearningcoban.com/2017/08/31/evaluation/)
 - [ ] write custom dataset for ImageFolder
 
