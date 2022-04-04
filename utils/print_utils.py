@@ -26,5 +26,5 @@ def print_time(title:str, time:float):
 
 def print_metric(metric_name:str, result:float) -> None:
     ...
-time = 12 * 60 +  1.007
-print_time("CLASSIFIER TRAINING TIME", time)
+# time = 12 * 60 +  1.007
+# print_time("CLASSIFIER TRAINING TIME", time)

@@ -42,7 +42,7 @@ def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
                 
                 optimizer.zero_grad()
                 # with torch.no_grad:
-                outp_Teacher = teacher(datas)
+                outp_Teacher = teacher(datas).detach()
                 
                 with torch.set_grad_enabled(phase == 'train'):
                     outp_Student = student(datas)
