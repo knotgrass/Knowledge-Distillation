@@ -15,3 +15,28 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [ ] write metric to caculator in training, accuracy, precision, recall, F1-score, see [link](https://machinelearningcoban.com/2017/08/31/evaluation/)
 - [ ] write custom dataset for ImageFolder
 
+
+#### Tree
+
+.
+├── config
+│   └── params_loss_kd.json
+│
+├── data.py
+├── distiller.py
+├── inference.py
+├── Knowledge_Distillation.ipynb
+├── LICENSE
+├── loss.py
+├── model.py
+├── README.md
+├── student_train.py
+├── teacher_train.py
+│
+├── utils
+│   ├── __init__.py
+│   └── print_utils.py
+│
+└── weights
+    ├── student.pth
+    └── teacher.pth
