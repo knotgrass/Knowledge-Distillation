@@ -83,7 +83,8 @@ class CIFAR100_ForKD(CIFAR100):
 
         self.data: Any = []
         self.targets = []
-
+        self.idx_to_class = {y: x for x, y in self.class_to_idx.items()}
+        
         # now load the picked numpy arrays
         for file_name, checksum in downloaded_list:
             file_path = os.path.join(self.root, self.base_folder, file_name)
