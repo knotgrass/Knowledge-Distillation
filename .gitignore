@@ -124,7 +124,7 @@ dmypy.json
 .pyre/
 
 # folder data
-.dataset/
+dataset/
 zzzz.py
 weights/
 Knowledge_Distillation.ipynb

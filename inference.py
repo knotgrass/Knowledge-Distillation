@@ -7,7 +7,7 @@ from time import time
 from colorama import Fore
 
 from data import loaders, transformers
-from model import student
+from models.model import student
 # from loss import loss_fn_kd
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
