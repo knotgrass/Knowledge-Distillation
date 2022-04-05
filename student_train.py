@@ -11,7 +11,7 @@ from time import time
 
 from data import loaders, dataset_sizes
 from loss import loss_fn_kd
-from utils.print_utils import print_msg, print_time
+from distiller.print_utils import print_msg, print_time
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

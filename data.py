@@ -1,10 +1,8 @@
 import os
 from colorama import Fore
 
-from torch._C import Generator
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import CIFAR100#, ImageFolder
-import torchvision.transforms as T
 
 from config import cfg
 

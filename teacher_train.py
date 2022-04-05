@@ -10,7 +10,7 @@ from tqdm import tqdm
 from time import time
 
 from data import loaders, dataset_sizes
-from utils.print_utils import print_msg
+from distiller.print_utils import print_msg
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
