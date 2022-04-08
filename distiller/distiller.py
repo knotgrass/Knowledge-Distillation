@@ -15,9 +15,9 @@ class Distiller(nn.Module):
     
     @staticmethod
     def distillation_loss(preds:Tensor, labels:Tensor, teacher_preds:Tensor, T, alpha:float):
-        return F.kl_div(F.log_softmax(preds / T, dim=1), 
-                        F.softmax(teacher_preds / T, dim=1),
-                        reduction='batchmean') * T * T * alpha + F.cross_entropy(preds, labels) * (1. - alpha)
+        return T * T * alpha * F.kl_div(F.log_softmax(preds / T, dim=1), 
+                                        F.softmax(teacher_preds / T, dim=1),
+                                        reduction='batchmean') + (1. - alpha) * F.cross_entropy(preds, labels)
     
     def train_and_valid(self, 
                         criterion:nn.Module, 
