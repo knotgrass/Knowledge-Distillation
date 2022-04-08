@@ -15,7 +15,7 @@ import torchvision.transforms as T
 from ..data import loaders
 from ..config import cfg
 from models.model import teacher
-
+from .pseudo_teacher import PseudoTeacher
 
 
 #TODO
@@ -60,7 +60,7 @@ class CIFAR100_ForKD(CIFAR100):
             transformS: Optional[Callable] = None,
             target_transform: Optional[Callable] = None,
             download: bool = False,
-            teacher:nn.Module = ...
+            teacher:Any = ...
     ) -> None:
 
         super(CIFAR100_ForKD, self).__init__(root, transform=transformS,
@@ -103,18 +103,24 @@ class CIFAR100_ForKD(CIFAR100):
         self.fetch_outp_teacher()
 
     def fetch_outp_teacher(self) -> None:
-        self.teacher.to(device).eval()
-        self.outp_teacher = []
+        self.outps_teacher = []
         
-        for img in self.data:
-            img = Image.fromarray(img)
-            img = cfg.transformers['original'](img)
-            img.to(device)
-            with torch.no_grad:
-                outp = self.teacher(img).detach().cpu().numpy()
-            self.outp_teacher.extend(outp)
+        if isinstance(self.teacher, nn.Module):
+            self.teacher.to(device).eval()
+            
+            for img in self.data:
+                img = Image.fromarray(img)
+                img = cfg.transformers['original'](img)
+                img.to(device)
+                with torch.no_grad:
+                    outp = self.teacher(img).detach().cpu().numpy()
+                self.outp_teacher.extend(outp)
+        
+        else:   # use pseudo teacher
+            for target in self.targets:
+                self.outps_teacher.append(self.teacher(target))
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any, Any]:
+    def __getitem__(self, idx: int) -> Tuple[Any, Any, Any]:
         """
         Args:
             index (int): Index
@@ -124,7 +130,7 @@ class CIFAR100_ForKD(CIFAR100):
             where target is index of the target class.
             outpT is index of predict of teacher models
         """
-        img, target , outpT = self.data[index], self.targets[index], self.outp_teacher
+        img, target , outpT = self.data[idx], self.targets[idx], self.outps_teacher[idx]
 
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
