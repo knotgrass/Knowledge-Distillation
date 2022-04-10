@@ -2,15 +2,15 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-
+# from torch.utils.data import DataLoader
 import os
 import copy
 from colorama import Fore
 from tqdm import tqdm
 from time import time
 
-from data import loaders, dataset_sizes
-from loss import loss_fn_kd
+from dataloader import loaders, dataset_sizes
+from distiller.loss import loss_fn_kd
 from distiller.print_utils import print_msg, print_time
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -18,7 +18,8 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
           criterion=loss_fn_kd, optimizer= ..., scheduler= ..., 
-          epochs:int= 12, path_save_weight:str= ...
+          epochs:int= 12, loaders:dict=..., dataset_sizes:dict=...,
+          path_save_weight:str= ...
           ) -> tuple:
     
     since = time()

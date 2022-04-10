@@ -9,7 +9,7 @@ from colorama import Fore
 from tqdm import tqdm
 from time import time
 
-from data import loaders, dataset_sizes
+from dataloader import loaders, dataset_sizes
 from distiller.print_utils import print_msg
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

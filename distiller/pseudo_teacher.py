@@ -1,3 +1,4 @@
+from typing import Any
 import numpy as np
 
 
@@ -46,7 +47,7 @@ class PseudoTeacher:
             # print(y)
             return y
         
-    def __call__(self, y):
+    def __call__(self, y:Any) -> Any:
         # y is label of class, isn't data
         if y in self.list_fn:
             return self.random_fn_class(y)
@@ -56,3 +57,9 @@ class PseudoTeacher:
     def update(self, newacc:float=0.99, newseed=None) -> None:
         np.random.seed(newseed)
         self.acc = newacc
+        self.list_fn = np.random.randint(
+            low = 0, high = self.dataset_size, 
+            size= round((1. - newacc) * self.dataset_size)
+        )
+        np.random.seed(None)
+        

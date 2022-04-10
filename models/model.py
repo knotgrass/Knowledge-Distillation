@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-from data import num_classes  # , class_to_idx, idx_to_class
+from dataloader import num_classes  # , class_to_idx, idx_to_class
 
 # import timm
 

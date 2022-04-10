@@ -6,7 +6,7 @@ import torch
 from time import time
 from colorama import Fore
 
-from data import loaders, transformers
+from dataloader import loaders, transformers
 from models.model import student
 # from loss import loss_fn_kd
 

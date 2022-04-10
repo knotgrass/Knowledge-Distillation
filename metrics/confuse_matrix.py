@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from ..data import num_classes
+from ..dataloader import num_classes
 
 
 def create_matrix(dataset_size:int, acc:float, precision:float, recall:float) -> np.ndarray:

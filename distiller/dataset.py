@@ -12,7 +12,7 @@ from torchvision.datasets import CIFAR100
 from torch.utils.data import DataLoader
 import torchvision.transforms as T
 
-from ..data import loaders
+from ..dataloader import loaders
 from ..config import cfg
 from models.model import teacher
 from .pseudo_teacher import PseudoTeacher
@@ -24,32 +24,9 @@ from .pseudo_teacher import PseudoTeacher
 # viết lại hàm __init__ và __getitem__ để lấy được outp_teacher
 # lưu lại outpTeacher với format giống target(label/gt)
 
-phase = 'train'
-
-for datas, targets , outp_Teacher in tqdm(loaders[phase], ncols=64, colour='black', 
-                            desc='{:6}'.format(phase).capitalize()):
-    ...
-# loader sẽ chạy trước 1 lượt, và save output ra ssd, khi cần sẽ load lên
-
-
-
-loaderT = DataLoader(
-    dataset=CIFAR100(root=cfg.dataset_root, 
-                     train=True, download=True, 
-                     transform=cfg.transformers['original']), 
-    batch_size=cfg.batch_size, 
-    shuffle=True,
-    num_workers=cfg.n_workers, 
-    generator=cfg.generator, 
-    pin_memory=True)
 
 device = cfg.device
-
-            
-        
-
-    
-
+original_transform = cfg.transformer['original']
 
 class CIFAR100_ForKD(CIFAR100):
     
@@ -110,7 +87,7 @@ class CIFAR100_ForKD(CIFAR100):
             
             for img in self.data:
                 img = Image.fromarray(img)
-                img = cfg.transformers['original'](img)
+                img = original_transform(img)
                 img.to(device)
                 with torch.no_grad:
                     outp = self.teacher(img).detach().cpu().numpy()
