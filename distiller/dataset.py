@@ -22,8 +22,10 @@ from .pseudo_teacher import PseudoTeacher
 # Write custom dataset 
 # kế thừa class CIFAR100
 # viết lại hàm __init__ và __getitem__ để lấy được outp_teacher
-# lưu lại outpTeacher với format giống target(label/gt)
-
+# lưu lại outpTeacher , outpTeacher là vector 
+    # outpT must be vecto of Probability distribution of class
+    # ex [0.1, 0.2, 0.3, 0.4, 0.0, ] 5class
+    # one hot vector is ok but largely isn't one-hot vecto
 
 device = cfg.device
 original_transform = cfg.transformer['original']
@@ -37,7 +39,7 @@ class CIFAR100_ForKD(CIFAR100):
             transformS: Optional[Callable] = None,
             target_transform: Optional[Callable] = None,
             download: bool = False,
-            teacher:Any = ...
+            teacher:Any = PseudoTeacher()
     ) -> None:
 
         super(CIFAR100_ForKD, self).__init__(root, transform=transformS,
@@ -60,7 +62,7 @@ class CIFAR100_ForKD(CIFAR100):
 
         self.data: Any = []
         self.targets = []
-        self.idx_to_class = {y: x for x, y in self.class_to_idx.items()}
+        # self.idx_to_class = {y: x for x, y in self.class_to_idx.items()}
         
         # now load the picked numpy arrays
         for file_name, checksum in downloaded_list:
@@ -108,7 +110,7 @@ class CIFAR100_ForKD(CIFAR100):
             outpT is index of predict of teacher models
         """
         img, target , outpT = self.data[idx], self.targets[idx], self.outps_teacher[idx]
-
+        
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
         img = Image.fromarray(img)
@@ -118,6 +120,5 @@ class CIFAR100_ForKD(CIFAR100):
 
         if self.target_transform is not None:
             target = self.target_transform(target)
-            outpT = self.target_transform(outpT)
 
         return img, target, outpT

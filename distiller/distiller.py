@@ -1,18 +1,19 @@
 import copy
 from time import time
 from typing import Any
+from colorama import Fore
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from colorama import Fore
+import torch.optim.lr_scheduler as lr_scheduler
 from torch import Tensor, device
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .loss import loss_fn_kd
+from .loss import KDLoss, loss_fn_kd
 
 
 def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float):
@@ -23,8 +24,9 @@ def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float):
     
     return '{} - {} - {} - {}'.format(phase_str, epoch_str, loss_str, acc_str)
 
+
 def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
-          criterion=loss_fn_kd, optimizer= ..., scheduler= ..., 
+          criterion:_Loss=KDLoss(), optimizer:optim.Optimizer=...,scheduler:lr_scheduler.ReduceLROnPlateau=..., 
           epochs:int= 12, loaders:dict=..., dataset_sizes:dict=...,
           device: device = torch.device('cuda:0'), path_save_weight:str= ...
           ) -> tuple:
@@ -51,8 +53,7 @@ def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
                     with torch.set_grad_enabled(phase == 'train'):
                         outp_Student = student(datas)
                         
-                        loss = criterion(outp_Student, targets, outp_Teacher, 
-                                        T = 6, alpha = 0.1)
+                        loss = criterion(outp_Student, targets, outp_Teacher)
                         _, pred = torch.max(outp_Student, 1)
                         
                         if phase == 'train':
