@@ -17,42 +17,36 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [ ] write Pseudo Teacher, input index class, return vecto of Probability distribution of class [0.1, 0.4, 0.3, 0.2, 0.0, 0.0, 0.0, ...], maybe generate random array and put it thought softmax and get output
 
 
-#### Tree
-.
-├── config
-│   ├── cfg.py
-├── dataloader.py
-├── dataset
-│   └── cifar-100-python
-│       ├── file.txt~
-│       ├── meta
-│       ├── test
-│       └── train
-├── distiller
-│   ├── dataset.py
-│   ├── distiller.py
-│   ├── __init__.py
-│   ├── loss.py
-│   ├── print_utils.py
-│   ├── pseudo_teacher.py
-├── inference.py
-├── Knowledge_Distillation.ipynb
-├── LICENSE
-├── metrics
-│   └── confuse_matrix.py
-├── models
-│   └── model.py
-├── __pycache__
-│   ├── data.cpython-38.pyc
-│   ├── loss.cpython-38.pyc
-│   ├── model.cpython-38.pyc
-│   ├── student_train.cpython-38.pyc
-│   └── teacher_train.cpython-38.pyc
-├── README.md
-├── requirements.txt
-├── student_train.py
-├── teacher_train.py
-├── weights
-│   ├── student.pth
+#### Tree   
+.   
+├── config   
+│   ├── cfg.py   
+├── dataloader.py   
+├── dataset   
+│   └── cifar-100-python   
+│       ├── file.txt~   
+│       ├── meta   
+│       ├── test   
+│       └── train   
+├── distiller   
+│   ├── dataset.py   
+│   ├── distiller.py   
+│   ├── __init__.py   
+│   ├── loss.py    
+│   ├── print_utils.py   
+│   ├── pseudo_teacher.py   
+├── inference.py   
+├── Knowledge_Distillation.ipynb   
+├── LICENSE   
+├── metrics   
+│   └── confuse_matrix.py   
+├── models   
+│   └── model.py   
+├── README.md   
+├── requirements.txt   
+├── student_train.py   
+├── teacher_train.py   
+├── weights   
+│   ├── student.pth   
 │   └── teacher.pth
 
