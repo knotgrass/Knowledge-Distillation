@@ -90,14 +90,16 @@ class CIFAR100_ForKD(CIFAR100):
             for img in self.data:
                 img = Image.fromarray(img)
                 img = original_transform(img)
-                img.to(device)
+                img = img.to(device)
                 with torch.no_grad:
                     outp = self.teacher(img).detach().cpu().numpy()
                 self.outp_teacher.extend(outp)
         
         else:   # use pseudo teacher
-            for target in self.targets:
-                self.outps_teacher.append(self.teacher(target))
+            raise NotImplementedError(
+                "only support torch.nn.Module model")
+            # for target in self.targets:
+            #     self.outps_teacher.append(self.teacher(target))
 
     def __getitem__(self, idx: int) -> Tuple[Any, Any, Any]:
         """
