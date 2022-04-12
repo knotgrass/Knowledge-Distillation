@@ -26,7 +26,7 @@ def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float):
 
 
 def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
-          criterion:_Loss=KDLoss(), optimizer:optim.Optimizer=...,scheduler:lr_scheduler.ReduceLROnPlateau=..., 
+          criterion:_Loss=KDLoss(6, 0.1),optimizer:optim.Optimizer=...,scheduler:lr_scheduler.ReduceLROnPlateau=..., 
           epochs:int= 12, loaders:dict=..., dataset_sizes:dict=...,
           device: device = torch.device('cuda:0'), path_save_weight:str= ...
           ) -> tuple:
