@@ -8,13 +8,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-from torch import Tensor, device
+from torch import Tensor
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from .loss import KDLoss, loss_fn_kd
 
+criterion = KDLoss(T=6, alpha=0.1, reduction='batchmean')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float):
     phase_str = '{:<5}'.format(phase.capitalize())
@@ -26,9 +28,9 @@ def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float):
 
 
 def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
-          criterion:_Loss=KDLoss(6, 0.1),optimizer:optim.Optimizer=...,scheduler:lr_scheduler.ReduceLROnPlateau=..., 
-          epochs:int= 12, loaders:dict=..., dataset_sizes:dict=...,
-          device: device = torch.device('cuda:0'), path_save_weight:str= ...
+          criterion:_Loss=criterion,optimizer:optim.Optimizer=...,scheduler:lr_scheduler.ReduceLROnPlateau=..., 
+          epochs:int= 20, loaders:dict=..., dataset_sizes:dict=...,
+          device:torch.device = device, path_save_weight:str= ...
           ) -> tuple:
     
     since = time()
