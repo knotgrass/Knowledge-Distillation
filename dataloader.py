@@ -7,8 +7,8 @@ from torchvision.datasets import CIFAR100#, ImageFolder
 from config import cfg
 
 
-cifar100 = CIFAR100('.dataset', train=True,
-                    download=True, transform=cfg.transformers['original'])
+cifar100 = CIFAR100('dataset', train=True, download=True,
+                    transform=cfg.transformers['original'])
 
 dataset_size = len(cifar100)
 
@@ -21,14 +21,14 @@ generator = cfg.generator
 train, val, test = random_split(cifar100, [train_size, val_size, test_size],
                                 generator=cfg.generator)
 
-batch_size = 32
+batch_size = cfg.batch_size
 n_workers = os.cpu_count()
 loaders = {}
 loaders['train'] = DataLoader(train, batch_size=batch_size, shuffle=True,
                               num_workers=n_workers, generator=generator, pin_memory=True)
 loaders['val'] = DataLoader(val, batch_size=batch_size, shuffle=True,
                             num_workers=n_workers, generator=generator, pin_memory=True)
-loaders['test'] = DataLoader(test, batch_size=batch_size, shuffle=False,
+loaders['test'] = DataLoader(test, batch_size=batch_size, shuffle=True,
                              num_workers=n_workers, generator=generator, pin_memory=True)
 del generator
 
