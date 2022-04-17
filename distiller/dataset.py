@@ -5,16 +5,11 @@ from typing import Any, Callable, Optional, Tuple
 import pickle
 import numpy as np
 
-
 import torch
 import torch.nn as nn
 from torchvision.datasets import CIFAR100
-from torch.utils.data import DataLoader
-import torchvision.transforms as T
 
-from ..dataloader import loaders
 from ..config import cfg
-from models.model import teacher
 from .pseudo_teacher import PseudoTeacher
 
 
@@ -90,9 +85,8 @@ class CIFAR100_ForKD(CIFAR100):
             for img in self.data:
                 img = Image.fromarray(img)
                 img = original_transform(img)
-                img = img.to(device)
                 with torch.no_grad:
-                    outp = self.teacher(img).detach().cpu().numpy()
+                    outp = self.teacher(img.to(device)).detach().cpu().numpy()
                 self.outp_teacher.extend(outp)
         
         else:   # use pseudo teacher
