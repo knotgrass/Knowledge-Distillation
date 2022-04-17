@@ -22,31 +22,47 @@ class PseudoTeacher:
         np.random.seed(None)
         # tf = round(acc * dataset_size)
     
+    def random_fn_idx_class(self, target) -> int:
+        # random index class, random wrong target class
+        # y must != idx
+        
+        y = np.random.randint(0, self.num_classes)
+        if y == target:
+            y += 1
+            if y == self.num_classes:
+                return 0
+                # y = 0
+        return y
     
-    def normal_distribution_class(self, idx:int) -> Tensor:
-        """
-        create probability distribution of output with index
+    def normal_distribution_class(self, target:int) -> Tensor:
+        r"""
+        >>> from target:index_class:int
+        >>> generator probability distribution vecto output
+        >>> return torch vector
         """
         
         # x is probability distribution vector of output
         x = torch.normal(mean= self.mean, std=self.std, 
                          size= (1, self.num_classes))
         
-        argmax = x.argmax()#; print(argmax)
-        if argmax != idx:
+        argmax = x.argmax()
+        if argmax != target:
             max_T = copy.deepcopy(x[0, argmax])
-            x[0, argmax] = x[0, idx]
-            x[0, idx] = max_T
+            x[0, argmax] = x[0, target]
+            x[0, target] = max_T
         return x
         
-    def __call__(self, y:int) -> Tensor:
-        # y is label of class, isn't data
-        if y in self.list_fn:
-            return self.random_fn_class(y)
-        else:
-            return y
+    def __call__(self, idx:int, target:int) -> Tensor:
+        # idx is order of img in dataset
+        # target is label of class, isn't data
+        if idx in self.list_fn:
+            # gen wrong target
+            target = self.random_fn_idx_class(target)
+            
+        # vector_outp
+        return self.normal_distribution_class(target)
         
-    def update(self, newacc:float=0.99, newseed=None) -> None:
+    def update(self, newacc:float=0.95, newseed=None) -> None:
         """
         this method use to create new teacher 
         with new probability distribution
