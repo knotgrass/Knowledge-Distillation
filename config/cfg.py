@@ -3,21 +3,21 @@ import torchvision.transforms as T
 from torch._C import Generator
 
 dataset_root = 'dataset'
-batch_size = 32
+batch_size = 8
 n_worker = 4
 lr = 0.001
 temperature = 6
 alpha = 0.1
-
+seed = 111
 generator = Generator()
-generator.manual_seed(0)
+generator.manual_seed(seed)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 input_size=(224, 224)
 mean = (0.4915, 0.4823, 0.4468)
 std = (0.2470, 0.2435, 0.2616)
 
-transformer = {
+transformers = {
     'original': T.Compose([
         T.Resize(input_size),
         T.ToTensor(),
