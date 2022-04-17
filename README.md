@@ -14,8 +14,9 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [x] write custom dataset for outp_Teacher, see [data.py](https://github.com/watson21/Knowledge-Distillation/blob/main/data.py#L74)
 - [ ] write metric to caculator in training, accuracy, precision, recall, F1-score, see [link](https://machinelearningcoban.com/2017/08/31/evaluation/)
 - [ ] write custom dataset for ImageFolder
-- [ ] write Pseudo Teacher, input index class, return vecto of Probability distribution of class [0.1, 0.4, 0.3, 0.2, 0.0, 0.0, 0.0, ...], maybe generate random array and put it thought softmax and get output
-
+- [x] write Pseudo Teacher, input index class, return vecto of Probability distribution of class [0.1, 0.4, 0.3, 0.2, 0.0, 0.0, 0.0, ...], maybe generate random array and put it thought softmax and get output
+- [ ] write unittest for PseudoTeacher, check vector output, random wrong index, num_data wrong/total data(1.-acc)
+- [ ] write Distiller like keras template
 
 #### Tree   
 .   
