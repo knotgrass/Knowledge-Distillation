@@ -3,6 +3,7 @@
 import torch.nn.functional as F
 from torch.nn.modules.loss import _Loss
 from torch import Tensor
+import numpy as np
 
 # hyperparameters for KD
 __alphas__ = [0.99, 0.95, 0.5, 0.1, 0.05]
@@ -36,3 +37,6 @@ class KDLoss(_Loss):
                         F.softmax(teacher_preds / self.temperature, dim=1), 
                         reduction=self.reduction, log_target=False 
                         ) * self.gamma + F.cross_entropy(preds, labels) * self.beta
+
+def softmax(x):
+    return np.exp(x) / np.sum(np.exp(x), axis=0)
