@@ -19,7 +19,7 @@ train_size = dataset_size - val_size - test_size
 generator = cfg.generator
 
 train, val, test = random_split(cifar100, [train_size, val_size, test_size],
-                                generator=cfg.generator)
+                                generator=generator)
 
 batch_size = cfg.batch_size
 n_workers = os.cpu_count()
