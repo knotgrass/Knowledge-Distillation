@@ -18,6 +18,7 @@ from .loss import KDLoss, loss_fn_kd
 criterion = KDLoss(T=6, alpha=0.1, reduction='batchmean')
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
+
 def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float):
     phase_str = '{:<5}'.format(phase.capitalize())
     epoch_str = Fore.RED +'Epoch'+ Fore.RESET +' {:>2d}/{:<2d}'.format(epoch, n_epoch)
@@ -28,7 +29,8 @@ def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float):
 
 
 def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
-          criterion:_Loss=criterion,optimizer:optim.Optimizer=...,scheduler:lr_scheduler.ReduceLROnPlateau=..., 
+          criterion:_Loss=criterion,optimizer:optim.Optimizer=...,
+          scheduler:lr_scheduler.ReduceLROnPlateau=..., 
           epochs:int= 20, loaders:dict=..., dataset_sizes:dict=...,
           device:torch.device = device, path_save_weight:str= ...
           ) -> tuple:

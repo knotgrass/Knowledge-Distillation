@@ -47,6 +47,7 @@ class PseudoTeacher:
         
         argmax = x.argmax()
         if argmax != target:
+            # swap
             max_T = copy.deepcopy(x[0, argmax])
             x[0, argmax] = x[0, target]
             x[0, target] = max_T
