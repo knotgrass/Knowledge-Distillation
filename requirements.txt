@@ -12,7 +12,8 @@ imageio # open image with url
 scikit-image
 numpy
 accimage    # high performance image loading and augmenting routines mimicking PIL.Image interface
-
+            # conda install -c conda-forge accimage
+            
 # augment for ML
 # https://www.facebook.com/VinBigdataTraining/posts/246123157524069
 Augmentor
