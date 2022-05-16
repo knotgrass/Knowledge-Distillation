@@ -1,4 +1,4 @@
-import torch
+import torch, tensorrt
 from torch2trt import torch2trt
 from torchvision.models.alexnet import alexnet
 from time import time

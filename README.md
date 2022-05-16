@@ -17,7 +17,7 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [x] write Pseudo Teacher, input index class, return vecto of Probability distribution of class [0.1, 0.4, 0.3, 0.2, 0.0, 0.0, 0.0, ...], maybe generate random array and put it thought softmax and get output
 - [ ] write unittest for PseudoTeacher, check vector output, random wrong index, num_data wrong/total data(1.-acc)
 - [ ] write Distiller like keras template
-
+- [ ] [Augmentation](https://journalofbigdata.springeropen.com/articles/10.1186/s40537-019-0197-0) using [albumentation](https://albumentations.ai/)
 #### Tree   
 .   
 ├── config   
