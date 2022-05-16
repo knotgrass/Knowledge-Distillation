@@ -25,3 +25,7 @@ Torchvision
 # for this project
 colorama
 tqdm
+
+# tensorrt
+tensorrt
+torch2trt
