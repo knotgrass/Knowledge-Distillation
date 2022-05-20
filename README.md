@@ -16,8 +16,8 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [ ] write custom dataset for ImageFolder
 - [x] write Pseudo Teacher, input index class, return vector of Probability distribution of class [0.1, 0.4, 0.3, 0.2, 0.0, 0.0, 0.0, ...], maybe generate random array and put it thought softmax and get output.
 - [ ] add feature for Pseudo Teacher
-    >>> input accuracy for each class; For example: 5 classes [0.8, 0.89, 1.0, 0.5, 0.99]
-    >>> return return vector of Probability distribution of class
+    -> input accuracy for each class; For example: 5 classes [0.8, 0.89, 1.0, 0.5, 0.99]   
+    -> return return vector of Probability distribution of class
 - [ ] write unittest for PseudoTeacher, check vector output, random wrong index, num_data wrong/total data(1.-acc)
 - [ ] write Distiller like keras template
 - [x] [Augmentation](https://journalofbigdata.springeropen.com/articles/10.1186/s40537-019-0197-0) using [albumentation](https://github.com/albumentations-team/albumentations) 
