@@ -1,23 +1,23 @@
+import copy
+import os
+from time import time
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-
-import os
-import copy
 from colorama import Fore
 from tqdm import tqdm
-from time import time
 
-from dataloader import loaders, dataset_sizes
 from distiller.print_utils import print_msg
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
-def train(teacher, best_teacher, best_acc, 
+def train(loaders:dict, dataset_sizes:dict, 
+          teacher, best_teacher, best_acc, 
           criterion, optimizer, scheduler, 
-          epochs, path_save_weight:str):
+          epochs, path_save_weight:str) -> tuple:
     since = time()
     
     for epoch in range(epochs):
@@ -32,7 +32,7 @@ def train(teacher, best_teacher, best_acc,
             running_loss = 0.0
             running_corrects = 0.0
 
-            for datas, targets in tqdm(loaders[phase], ncols=64, colour='black', 
+            for datas, targets in tqdm(loaders[phase], ncols=64, colour='green', 
                                        desc='{:6}'.format(phase).capitalize()):
                 datas, targets = datas.to(device), targets.to(device)
 
@@ -66,20 +66,21 @@ def train(teacher, best_teacher, best_acc,
                 
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                best_teacher = copy.deepcopy(teacher.state_dict())
+                best_teacher = copy.deepcopy(teacher)
                 torch.save(teacher.state_dict(), path_save_weight)
         
     return best_teacher, best_acc
 
 
-def training(epochs_freeze:int, epochs_unfreeze:int, 
-             teacher:nn.Module, path_save_weight:str=None):
-    if path_save_weight is None:
+def training(loaders:dict, dataset_sizes:dict,
+             epochs_freeze:int, epochs_unfreeze:int, 
+             teacher:nn.Module, path_save_weight:str=None) -> nn.Module:
+    if path_save_weight is None: 
         if os.path.isdir('Weights'):
             os.makedirs('Weights')
         path_save_weight = os.path.join(
             'Weights', teacher.__class__.__name__ + '.pth')
-    print('Training {} using {}'.format(teacher.__class__.__name__, device))
+    print('Training {} using {}'.format(teacher.__class__.__name__, torch.cuda.get_device_name(0)))
 
     teacher.to(device)
     criterion = nn.CrossEntropyLoss()
@@ -92,7 +93,8 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     best_teacher = copy.deepcopy(teacher.state_dict())
     best_acc = 0.0
     
-    best_teacher, best_acc = train(teacher, best_teacher, best_acc, 
+    best_teacher, best_acc = train(loaders, dataset_sizes,
+                                   teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
                                    epochs_freeze, path_save_weight)
 
@@ -112,7 +114,8 @@ def training(epochs_freeze:int, epochs_unfreeze:int,
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, 
                                                patience=2, verbose=True)
     
-    best_teacher, best_acc = train(teacher, best_teacher, best_acc, 
+    best_teacher, best_acc = train(loaders, dataset_sizes,
+                                   teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
                                    epochs_unfreeze, path_save_weight)
     
