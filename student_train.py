@@ -92,7 +92,7 @@ def training_kd(student:nn.Module, teacher:nn.Module,
         path_save_weight = os.path.join(
             'Weights', student.__class__.__name__ + '.pth')
     print('Training {} using {}'.format(
-        student.__class__.__name__, device))
+        student.__class__.__name__, torch.cuda.get_device_name(0)))
 
     student.to(device); teacher.to(device).eval()
     criterion = loss_fn_kd
