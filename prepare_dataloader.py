@@ -12,6 +12,10 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from torch._C import Generator
 
+#https://github.com/pytorch/accimage#accimage
+from torchvision import set_image_backend
+set_image_backend('accimage')
+
 class AlbumDatasetFolder(DatasetFolder):
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         r"""
@@ -89,7 +93,7 @@ class AlbumImageFolder(AlbumDatasetFolder):
 
 #TODO config for each dataset
 dataset_root = 'dataset/intel-image-classification/seg_train'
-batch_size = 128
+batch_size = 8
 
 n_workers = os.cpu_count()
 lr = 0.001
