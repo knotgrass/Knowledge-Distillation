@@ -13,20 +13,21 @@ from tqdm import tqdm
 from distiller.print_utils import print_msg
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
+folder_save = 'weights'
+batch_num:int = 0
 
 def train(loaders:dict, dataset_sizes:dict, 
-          teacher, best_teacher, best_acc, 
+          teacher:nn.Module, best_teacher:nn.Module, best_acc:float, 
           criterion, optimizer, scheduler, 
-          epochs, path_save_weight:str) -> tuple:
+          epochs:int, model_name:str) -> tuple:
     since = time()
     
-    for epoch in range(epochs):
-        for phase in ['train', 'val']:
+    for epoch in range(1, epochs+1):
+        for phase in ('train', 'val'):
             if phase == 'train': 
                 teacher.train()
                 print(Fore.RED); print('Epoch : {:>2d}/{:<2d}'.format(
-                    epoch+1, epochs), Fore.RESET, ' {:>48}'.format('='*46))
+                    epoch, epochs), Fore.RESET, ' {:>48}'.format('='*46))
             else:
                 teacher.eval()
 
@@ -68,14 +69,16 @@ def train(loaders:dict, dataset_sizes:dict,
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_teacher = copy.deepcopy(teacher)
-                torch.save(teacher.state_dict(), path_save_weight)
+                torch.save(teacher.state_dict(), model_name)
         
     return best_teacher, best_acc
 
 
 def training(loaders:dict, dataset_sizes:dict,
              epochs_freeze:int, epochs_unfreeze:int, 
-             teacher:nn.Module, path_save_weight:str=None) -> nn.Module:
+             teacher:nn.Module, path_save_weight:str) -> nn.Module:
+    
+    assert len(loaders) >=2 and len(dataset_sizes) >=2, 'please check loaders'
     if path_save_weight is None: 
         if not osp.isdir('Weights'): os.makedirs('Weights')
         path_save_weight = osp.join(
@@ -104,7 +107,7 @@ def training(loaders:dict, dataset_sizes:dict,
         time_elapsed//60, time_elapsed % 60))
     print_msg("Unfreeze all layers", teacher.__class__.__name__)
 
-    teacher.load_state_dict(best_teacher)
+    teacher.load_state_dict(best_teacher.state_dict())
 
     # unfrezz all layer
     for param in teacher.parameters():
