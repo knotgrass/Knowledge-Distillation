@@ -1,5 +1,5 @@
-from dataloader import loaders, dataset_sizes, num_classes
-from teacher_train import training
+from prepare_dataloader import loaders, dataset_sizes, num_classes
+from distiller.teacher_train import training
 # from models.model import teacher#, student
 
 import torch.nn as nn

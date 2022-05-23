@@ -127,4 +127,6 @@ dmypy.json
 dataset/cifar-100-python/*
 zzzz.py
 weights/*.pth
-Knowledge_Distillation.ipynb
+# Knowledge_Distillation.ipynb
+dataset/intel-image-classification/*
+dataset/*
