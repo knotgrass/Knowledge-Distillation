@@ -4,7 +4,10 @@ torchmetrics    # https://torchmetrics.readthedocs.io/en/latest/
 timm            # https://rwightman.github.io/pytorch-image-models/
 
 Pillow
+
+# opencv must same version
 opencv-contrib-python
+opencv-python-headless
 # if using SIFT in opencv-python
 # pip install opencv-contrib-python==3.4.2.17 --force-reinstall
 imutils # extension for opencv-python
