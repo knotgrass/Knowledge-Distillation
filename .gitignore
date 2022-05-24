@@ -130,3 +130,4 @@ weights/*.pth
 # Knowledge_Distillation.ipynb
 dataset/intel-image-classification/*
 dataset/*
+.vscode/*

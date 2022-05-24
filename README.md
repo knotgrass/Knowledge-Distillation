@@ -21,6 +21,7 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [ ] write unittest for PseudoTeacher, check vector output, random wrong index, num_data wrong/total data(1.-acc)
 - [ ] write Distiller like keras template
 - [x] [Augmentation](https://journalofbigdata.springeropen.com/articles/10.1186/s40537-019-0197-0) using [albumentation](https://github.com/albumentations-team/albumentations) 
+- [ ] using [augmentor](https://github.com/mdbloice/Augmentor)
 #### Tree   
 .   
 ├── config   
