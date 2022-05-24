@@ -9,10 +9,10 @@ import numpy as np
 import cv2
 # from scipy.special import softmax
 from distiller.loss import softmax
-
+from typing import Tuple
 # from prepare_dataloader import loaders
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class Student(object):
     def __init__(self, input_size:tuple, num_classes:int, 
@@ -39,7 +39,7 @@ class Student(object):
             T.Resize(input_size),
             T.ToTensor(),
             T.Normalize(mean, std)
-    ])
+        ])
         
         self.albumen_transform = A.Compose([
             A.Resize(*input_size, always_apply=True),
@@ -48,7 +48,7 @@ class Student(object):
         ], p=1.0)
 
     @torch.no_grad
-    def inference(self, img:np.ndarray) -> tuple:
+    def inference(self, img:np.ndarray) -> Tuple[int, float]:
         img = self.transform(img)
         out = self.model(img.to(self.device)).detach().cpu().numpy()
         idx = out.argmax()
