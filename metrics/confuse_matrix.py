@@ -17,25 +17,7 @@ gt = table['gt'].tolist()
 pred = table['pred'].tolist()
 size = len(set(gt))
 
-classes = [
-        "TP_1",
-        "TP_2",
-        "TP_3",
-        "TP_4",
-        "TP_5",
-        "TP_6",
-        "TP_7",
-        "TP_8",
-        "TP_unknown",
-        
-        "FN_1",
-        "FN_2",
-        "FN_3",
-        "FN_4",
-        "FN_5",
-        "FN_6",
-        "FN_7",
-        "FN_unknown"]
+classes = []
 
 # print(len(classes))
 # print(set(gt))
