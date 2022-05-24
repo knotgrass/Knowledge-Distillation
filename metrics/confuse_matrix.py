@@ -5,11 +5,9 @@ import seaborn as sns
 from pretty_confusion_matrix import pp_matrix, pp_matrix_from_data
 
 # np.set_printoptions(precision=5, suppress= True)
+#NOTE https://github.com/DTrimarchi10/confusion_matrix.git
 
-
-path_csv = r'C:\Users\adang1\Documents\SuntoryImageDB-dev_python\temp\evaluation.csv'
-
-# test = r'C:\Users\adang1\Documents\SuntoryImageDB-dev_python\train_datasets\cls\test_classify'
+path_csv = r'evaluation.csv'
 
 table = pd.read_csv(path_csv)
 # print(table.shape)
