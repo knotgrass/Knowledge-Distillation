@@ -9,17 +9,21 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from colorama import Fore
 from tqdm import tqdm
-
+from typing import Any, Tuple
 from distiller.print_utils import print_msg
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 folder_save = 'weights'
+if not osp.isdir(folder_save): os.makedirs(folder_save)
 batch_num:int = 0
 
-def train(loaders:dict, dataset_sizes:dict, 
+def train(loaders:dict, dataset_sizes:dict, device:torch.device,
           teacher:nn.Module, best_teacher:nn.Module, best_acc:float, 
           criterion, optimizer, scheduler, 
-          epochs:int, model_name:str) -> tuple:
+          epochs:int, model_name:str, ckpt:int=20
+          ) -> Tuple[nn.Module, float]:
+    
+    global batch_num
     since = time()
     
     for epoch in range(1, epochs+1):
@@ -36,6 +40,9 @@ def train(loaders:dict, dataset_sizes:dict,
 
             for datas, targets in tqdm(loaders[phase], ncols=64, colour='green', 
                                        desc='{:6}'.format(phase).capitalize()):
+                
+                if phase == 'train': batch_num += 1
+                
                 datas, targets = datas.to(device), targets.to(device)
 
                 optimizer.zero_grad()
@@ -52,6 +59,11 @@ def train(loaders:dict, dataset_sizes:dict,
                 running_loss += loss.item()*datas.size(0)
                 running_corrects += torch.sum(pred == targets.data)
                 
+                #save checkpoint
+                if not batch_num % ckpt:
+                    path_save = osp.join(folder_save, '{}_{}.pth'.format(model_name, batch_num))
+                    torch.save(teacher.state_dict(), path_save)
+                    
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
             
@@ -69,22 +81,18 @@ def train(loaders:dict, dataset_sizes:dict,
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_teacher = copy.deepcopy(teacher)
-                torch.save(teacher.state_dict(), model_name)
-        
+                path_save = osp.join(folder_save, '{}_best.pth'.format(model_name))
+                torch.save(teacher.state_dict(), path_save)
     return best_teacher, best_acc
 
 
-def training(loaders:dict, dataset_sizes:dict,
+def training(loaders:dict, dataset_sizes:dict, device:torch.device,
              epochs_freeze:int, epochs_unfreeze:int, 
-             teacher:nn.Module, path_save_weight:str) -> nn.Module:
+             teacher:nn.Module, model_name:str, ckpt:int=20
+             ) -> nn.Module:
     
     assert len(loaders) >=2 and len(dataset_sizes) >=2, 'please check loaders'
-    if path_save_weight is None: 
-        if not osp.isdir('Weights'): os.makedirs('Weights')
-        path_save_weight = osp.join(
-            'Weights', teacher.__class__.__name__ + '.pth')
-    print('Training {} using {}'.format(
-        teacher.__class__.__name__, torch.cuda.get_device_name(0)))
+    print('Training {} on {}'.format(model_name, torch.cuda.get_device_name(0)))
 
     teacher.to(device)
     criterion = nn.CrossEntropyLoss()
@@ -97,10 +105,10 @@ def training(loaders:dict, dataset_sizes:dict,
     best_teacher = copy.deepcopy(teacher)
     best_acc = 0.0
     
-    best_teacher, best_acc = train(loaders, dataset_sizes,
+    best_teacher, best_acc = train(loaders, dataset_sizes, device,
                                    teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs_freeze, path_save_weight)
+                                   epochs_freeze, model_name, 20)
 
     time_elapsed = time() - since
     print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
@@ -121,9 +129,10 @@ def training(loaders:dict, dataset_sizes:dict,
     best_teacher, best_acc = train(loaders, dataset_sizes,
                                    teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs_unfreeze, path_save_weight)
+                                   epochs_unfreeze, model_name, 20)
     
-    torch.save(best_teacher.state_dict(), path_save_weight)
+    last_teacher = osp.join(folder_save, '{}_last.pth'.format(model_name))
+    torch.save(best_teacher.state_dict(), last_teacher)
     time_elapsed = time() - since
     print('ALL NET TRAINING TIME {} m {:.3f}s'.format(
         time_elapsed//60, time_elapsed % 60))
