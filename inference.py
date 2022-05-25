@@ -49,8 +49,8 @@ class Student(object):
 
     @torch.no_grad
     def inference(self, img:np.ndarray) -> Tuple[int, float]:
-        img = self.transform(img)
-        out = self.model(img.to(self.device)).detach().cpu().numpy()
+        img = self.transform(img).to(self.device)
+        out = self.model(img).detach().cpu().numpy()
         idx = out.argmax()
         dist = softmax(out)
         score = dist.max()
