@@ -28,3 +28,12 @@ def print_metric(metric_name:str, result:float) -> None:
     ...
 # time = 12 * 60 +  1.007
 # print_time("CLASSIFIER TRAINING TIME", time)
+
+
+def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float) -> str:
+    phase_str = '{:<5}'.format(phase.capitalize())
+    epoch_str = Fore.RED +'Epoch'+ Fore.RESET +' {:>2d}/{:<2d}'.format(epoch, n_epoch)
+    loss_str = Fore.LIGHTMAGENTA_EX + 'loss' + Fore.RESET + ' = {:.6f}'.format(loss)
+    acc_str = Fore.LIGHTCYAN_EX + 'acc'+ Fore.RESET + ' = {:.3f}'.format(acc)
+    
+    return '{} - {} - {} - {}'.format(phase_str, epoch_str, loss_str, acc_str)
