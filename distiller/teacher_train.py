@@ -2,14 +2,17 @@ import copy
 import os
 import os.path as osp
 from time import time
+from colorama import Fore
+from tqdm import tqdm
+from typing import Tuple, Dict
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
-from colorama import Fore
-from tqdm import tqdm
-from typing import Any, Tuple
+from torch.nn.modules.loss import _Loss
+from torch.utils.data import DataLoader
+
 from distiller.print_utils import print_msg
 
 # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -17,9 +20,9 @@ folder_save = 'weights'
 if not osp.isdir(folder_save): os.makedirs(folder_save)
 batch_num:int = 0
 
-def train(loaders:dict, dataset_sizes:dict, device:torch.device,
+def train(loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int], device:torch.device,
           teacher:nn.Module, best_teacher:nn.Module, best_acc:float, 
-          criterion, optimizer, scheduler, 
+          criterion:_Loss, optimizer:optim.Optimizer, scheduler, 
           epochs:int, model_name:str, ckpt:int=20
           ) -> Tuple[nn.Module, float]:
     
@@ -86,7 +89,7 @@ def train(loaders:dict, dataset_sizes:dict, device:torch.device,
     return best_teacher, best_acc
 
 
-def training(loaders:dict, dataset_sizes:dict, device:torch.device,
+def training(loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int], device:torch.device,
              epochs_freeze:int, epochs_unfreeze:int, 
              teacher:nn.Module, model_name:str, ckpt:int=20
              ) -> nn.Module:
@@ -108,7 +111,7 @@ def training(loaders:dict, dataset_sizes:dict, device:torch.device,
     best_teacher, best_acc = train(loaders, dataset_sizes, device,
                                    teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs_freeze, model_name, 20)
+                                   epochs_freeze, model_name, ckpt)
 
     time_elapsed = time() - since
     print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
@@ -129,7 +132,7 @@ def training(loaders:dict, dataset_sizes:dict, device:torch.device,
     best_teacher, best_acc = train(loaders, dataset_sizes,
                                    teacher, best_teacher, best_acc, 
                                    criterion, optimizer, scheduler, 
-                                   epochs_unfreeze, model_name, 20)
+                                   epochs_unfreeze, model_name, ckpt)
     
     last_teacher = osp.join(folder_save, '{}_last.pth'.format(model_name))
     torch.save(best_teacher.state_dict(), last_teacher)
