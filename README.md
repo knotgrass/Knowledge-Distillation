@@ -8,6 +8,12 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
     * https://github.com/peterliht/knowledge-distillation-pytorch/issues/2
     * https://pytorch.org/docs/stable/generated/torch.nn.KLDivLoss.html
     * https://keras.io/examples/vision/knowledge_distillation/
+    * https://github.com/SforAiDl/KD_Lib/blob/master/README.md
+    * https://intellabs.github.io/distiller/knowledge_distillation.html#hinton-et-al-2015
+
+#### Compare
+    * optimize speed and memory
+    * dont need train teacher with Pseudo Teacher
 
 
 #### TODO
@@ -22,36 +28,3 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [ ] write Distiller like keras template
 - [x] [Augmentation](https://journalofbigdata.springeropen.com/articles/10.1186/s40537-019-0197-0) using [albumentation](https://github.com/albumentations-team/albumentations) 
 - [ ] using [augmentor](https://github.com/mdbloice/Augmentor)
-#### Tree   
-.   
-├── config   
-│   ├── cfg.py   
-├── dataloader.py   
-├── dataset   
-│   └── cifar-100-python   
-│       ├── file.txt~   
-│       ├── meta   
-│       ├── test   
-│       └── train   
-├── distiller   
-│   ├── dataset.py   
-│   ├── distiller.py   
-│   ├── __init__.py   
-│   ├── loss.py    
-│   ├── print_utils.py   
-│   ├── pseudo_teacher.py   
-├── inference.py   
-├── Knowledge_Distillation.ipynb   
-├── LICENSE   
-├── metrics   
-│   └── confuse_matrix.py   
-├── models   
-│   └── model.py   
-├── README.md   
-├── requirements.txt   
-├── student_train.py   
-├── teacher_train.py   
-├── weights   
-│   ├── student.pth   
-│   └── teacher.pth
-
