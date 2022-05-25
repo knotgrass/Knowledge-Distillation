@@ -1,62 +1,58 @@
 import os
-from typing import Any, Callable, Optional, Tuple
-import cv2
-import numpy as np
 from colorama import Fore
 from torch.utils.data import ConcatDataset, DataLoader, random_split
 # from torchvision.datasets import CIFAR100, ImageFolder, DatasetFolder
-from torchvision.datasets.folder import (IMG_EXTENSIONS, DatasetFolder,
-                                         ImageFolder)
+from torchvision.datasets import ImageFolder
 import torchvision.transforms as T
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from torch._C import Generator
-
+from distiller.datasets import AlbumImageFolder
 #https://github.com/pytorch/accimage#accimage
 from torchvision import set_image_backend
 set_image_backend('accimage')
 
-class AlbumDatasetFolder(DatasetFolder):
-    def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        r"""
-        Args:
-            index (int): Index
+# class AlbumDatasetFolder(DatasetFolder):
+#     def __getitem__(self, index: int) -> Tuple[Any, Any]:
+#         r"""
+#         Args:
+#             index (int): Index
 
-        Returns:
-            tuple: (sample, target) where target is class_index of the target class.
-        """
-        path, target = self.samples[index]
-        sample = self.loader(path)
-        if self.transform is not None:
-            sample = self.transform(image=sample)['image']
-        if self.target_transform is not None:
-            target = self.target_transform(target)
+#         Returns:
+#             tuple: (sample, target) where target is class_index of the target class.
+#         """
+#         path, target = self.samples[index]
+#         sample = self.loader(path)
+#         if self.transform is not None:
+#             sample = self.transform(image=sample)['image']
+#         if self.target_transform is not None:
+#             target = self.target_transform(target)
 
-        return sample, target
+#         return sample, target
     
 
-def albumen_loader(path:str) -> np.ndarray:
-    # fpath = os.path.join(image_dir_path, fn)
-    # img = cv2.imdecode(np.fromfile(fpath), cv2.IMREAD_COLOR)
-    # img = cv2.imread(fpath)
-    return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
+# def albumen_loader(path:str) -> np.ndarray:
+#     # fpath = os.path.join(image_dir_path, fn)
+#     # img = cv2.imdecode(np.fromfile(fpath), cv2.IMREAD_COLOR)
+#     # img = cv2.imread(fpath)
+#     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 
-class AlbumImageFolder(AlbumDatasetFolder):
+# class AlbumImageFolder(AlbumDatasetFolder):
     
-    def __init__(
-            self,
-            root: str,
-            transform: Optional[Callable] = None,
-            target_transform: Optional[Callable] = None,
-            loader: Callable[[str], Any] = albumen_loader,
-            is_valid_file: Optional[Callable[[str], bool]] = None,
-    ):
-        super(AlbumImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
-                                          transform=transform,
-                                          target_transform=target_transform,
-                                          is_valid_file=is_valid_file)
-        self.imgs = self.samples
+#     def __init__(
+#             self,
+#             root: str,
+#             transform: Optional[Callable] = None,
+#             target_transform: Optional[Callable] = None,
+#             loader: Callable[[str], Any] = albumen_loader,
+#             is_valid_file: Optional[Callable[[str], bool]] = None,
+#     ):
+#         super(AlbumImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
+#                                           transform=transform,
+#                                           target_transform=target_transform,
+#                                           is_valid_file=is_valid_file)
+#         self.imgs = self.samples
 
 
 # class AlbumImageFolder(ImageFolder):
