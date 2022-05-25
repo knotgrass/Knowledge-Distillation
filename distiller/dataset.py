@@ -1,5 +1,4 @@
-import os.path
-from tqdm import tqdm
+import os.path as osp
 from PIL import Image
 from typing import Any, Callable, Optional, Tuple
 import pickle
@@ -9,9 +8,8 @@ import torch
 import torch.nn as nn
 from torchvision.datasets import CIFAR100
 
-from ..config import cfg
 from .pseudo_teacher import PseudoTeacher
-
+import torchvision.transforms as T
 
 #TODO
 # Write custom dataset 
@@ -22,8 +20,12 @@ from .pseudo_teacher import PseudoTeacher
     # ex [0.1, 0.2, 0.3, 0.4, 0.0, ] 5class
     # one hot vector is ok but largely isn't one-hot vecto
 
-device = cfg.device
-original_transform = cfg.transformer['original']
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+original_transform = T.Compose([
+        T.Resize(size=(224, 224)),
+        T.ToTensor(),
+        T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
+    ])
 
 class CIFAR100_ForKD(CIFAR100):
     
@@ -61,7 +63,7 @@ class CIFAR100_ForKD(CIFAR100):
         
         # now load the picked numpy arrays
         for file_name, checksum in downloaded_list:
-            file_path = os.path.join(self.root, self.base_folder, file_name)
+            file_path = osp.join(self.root, self.base_folder, file_name)
             with open(file_path, 'rb') as f:
                 entry = pickle.load(f, encoding='latin1')
                 self.data.append(entry['data'])
