@@ -3,6 +3,7 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 
 #### Reference
     * https://arxiv.org/pdf/1503.02531.pdf
+    * https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     * https://github.com/wonbeomjang/Knowledge-Distilling-PyTorch/blob/master/loss.py
     * https://github.com/peterliht/knowledge-distillation-pytorch/blob/master/model/net.py
     * https://github.com/peterliht/knowledge-distillation-pytorch/issues/2
