@@ -1,6 +1,6 @@
 import copy
 from time import time
-from typing import Any, Tuple#, TypedDict
+from typing import Any, Tuple, Dict
 from colorama import Fore
 import os.path as osp
 import os
@@ -15,8 +15,8 @@ from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .loss import KDLoss#, loss_fn_kd
-from distiller.print_utils import print_msg, print_time
+from .loss import KDLoss
+from distiller.print_utils import print_msg, print_time, desc
 
 # class Loaders(TypedDict):
 #     # https://peps.python.org/pep-0589/#using-typeddict-types
@@ -28,20 +28,81 @@ from distiller.print_utils import print_msg, print_time
 folder_save = 'weights'
 if not osp.isdir(folder_save): os.makedirs(folder_save)
 batch_num:int = 0
-
-
-def desc(epoch:int, n_epoch:int, phase:str, loss:float, acc:float) -> str:
-    phase_str = '{:<5}'.format(phase.capitalize())
-    epoch_str = Fore.RED +'Epoch'+ Fore.RESET +' {:>2d}/{:<2d}'.format(epoch, n_epoch)
-    loss_str = Fore.LIGHTMAGENTA_EX + 'loss' + Fore.RESET + ' = {:.6f}'.format(loss)
-    acc_str = Fore.LIGHTCYAN_EX + 'acc'+ Fore.RESET + ' = {:.3f}'.format(acc)
+#TODO move train teacher here, remove best teacher
+def train(loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int], device:torch.device,
+          teacher:nn.Module, best_teacher:nn.Module, best_acc:float, 
+          criterion:_Loss, optimizer:optim.Optimizer, scheduler, 
+          epochs:int, ckpt:int=20
+          ) -> Tuple[nn.Module, float]:
     
-    return '{} - {} - {} - {}'.format(phase_str, epoch_str, loss_str, acc_str)
+    global batch_num
+    since = time()
+    
+    for epoch in range(1, epochs+1):
+        for phase in ('train', 'val'):
+            if phase == 'train': 
+                teacher.train()
+                print(Fore.RED); print('Epoch : {:>2d}/{:<2d}'.format(
+                    epoch, epochs), Fore.RESET, ' {:>48}'.format('='*46))
+            else:
+                teacher.eval()
+
+            running_loss = 0.0
+            running_corrects = 0.0
+
+            for datas, targets in tqdm(loaders[phase], ncols=64, colour='green', 
+                                       desc='{:6}'.format(phase).capitalize()):
+                
+                if phase == 'train': batch_num += 1
+                
+                datas, targets = datas.to(device), targets.to(device)
+
+                optimizer.zero_grad()
+
+                with torch.set_grad_enabled(phase == 'train'):
+                    outp = teacher(datas)
+                    _, pred = torch.max(outp, 1)
+                    loss = criterion(outp, targets)
+
+                    if phase == 'train':
+                        loss.backward()
+                        optimizer.step()
+
+                running_loss += loss.item()*datas.size(0)
+                running_corrects += torch.sum(pred == targets.data)
+                
+                #save checkpoint
+                if not batch_num % ckpt:
+                    path_save = osp.join(folder_save, '{}_{}.pth'.format(
+                        teacher.__class__.__name__, batch_num))
+                    torch.save(teacher.state_dict(), path_save)
+                    
+            epoch_loss = running_loss / dataset_sizes[phase]
+            epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            
+            if phase == 'train':
+                scheduler.step(100. * epoch_acc) #acc
+                
+            print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
+                '{:5}'.format(phase).capitalize(), epoch_loss, 100*epoch_acc))
+
+            if phase == 'val':
+                time_elapsed = time() - since
+                print('Time: {}m {:.3f}s'.format(
+                    time_elapsed // 60, time_elapsed % 60))
+                
+            if phase == 'val' and epoch_acc > best_acc:
+                best_acc = epoch_acc
+                best_teacher = copy.deepcopy(teacher)
+                path_save = osp.join(folder_save, '{}_best.pth'.format(
+                    teacher.__class__.__name__))
+                torch.save(teacher.state_dict(), path_save)
+    return best_teacher, best_acc
 
 
-def train_kd(loaders:dict, dataset_sizes:dict, device:torch.device,
+def train_kd(loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int], device:torch.device,
              student:nn.Module, best_acc:float,
-             criterion:_Loss, optimizer:optim.Optimizer, scheduler, 
+             criterion:_Loss, optimizer:optim.Optimizer, scheduler:Any, 
              epochs:int, model_name:str, ckpt:int=20
              ) -> Tuple[nn.Module, float]:
     
@@ -64,19 +125,20 @@ def train_kd(loaders:dict, dataset_sizes:dict, device:torch.device,
             
             with tqdm(loaders[phase], ncols=128, colour='YELLOW', 
                       desc=desc(epoch, epochs, phase, 0.0, best_acc)) as progress:
-                for idx, (datas, targets, outp_T) in enumerate(loaders[phase], start=1):
+                for idx, (datas, targets, soft_label) in enumerate(loaders[phase], start=1):
                     if phase == 'train': batch_num += 1
                     
                     datas= datas.to(device)
                     targets = targets.to(device)
-                    outp_T = outp_T.to(device)
+                    # if is_aug: soft_label = teacher(datas)
+                    soft_label = soft_label.to(device)
                     
                     optimizer.zero_grad()
                     
                     with torch.set_grad_enabled(phase == 'train'):
-                        outp_S = student(datas)
+                        outp_S = student(datas) # forward
                         _, pred = torch.max(outp_S, 1)
-                        loss = criterion(outp_S, targets, outp_T)
+                        loss = criterion(outp_S, targets, soft_label)
                         
                         if phase == 'train':
                             loss.backward()
@@ -104,10 +166,12 @@ def train_kd(loaders:dict, dataset_sizes:dict, device:torch.device,
                 progress.set_description(
                     desc(epoch, epochs, phase, epoch_loss, epoch_acc))
                 
+            print('{} - loss = {:.6f}, accuracy = {:.3f}'.format(
+                '{:5}'.format(phase).capitalize(), epoch_loss, 100*epoch_acc))
+            
             if phase == 'train':
                 scheduler.step(100. * epoch_acc) #acc
-
-            if phase == 'val':
+            else:# phase == 'val'
                 time_elapsed = time() - since
                 print('Time: {}m {:.3f}s'.format(
                     time_elapsed // 60, time_elapsed % 60))
@@ -121,7 +185,7 @@ def train_kd(loaders:dict, dataset_sizes:dict, device:torch.device,
     return best_student, best_acc
 
 
-class Distiller(nn.Module):
+class Distiller(object):
     def __init__(self, teacher:Any, student:nn.Module, criterion:_Loss) -> None:
         # super().__init__()
         self.teacher = teacher
@@ -134,15 +198,15 @@ class Distiller(nn.Module):
                                         F.softmax(teacher_preds / T, dim=1),
                                         reduction='batchmean') + (1. - alpha) * F.cross_entropy(preds, labels)
 
-    def training_student(self, 
-                         loaders:dict, dataset_sizes:dict, device:torch.device,
+    def training_student(self, device:torch.device,
+                         loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int],
                          epochs_warmup:int, epochs:int, model_name:str, ckpt:int,
                          ) -> nn.Module:
         
         assert len(loaders) >= 2 and len(dataset_sizes) >= 2, 'please check loaders'
         
         #TODO write desc of input and output
-        #TODO https://www.kaggle.com/code/georgiisirotenko/pytorch-flowers-translearing-ensemble-test-99-67
+        #TODO https://tinyurl.com/8wnknv9p
         # all param unless classify layer must freeze at the first train
         # for param in teacher.parameters():
         #     param.requires_grad = False
@@ -150,7 +214,7 @@ class Distiller(nn.Module):
         self.student.to(device)
         optimizer = optim.Adam(list(self.student.children())[-1].parameters(), lr=0.001, 
                                betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, 
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.2, 
                                                    patience=3, verbose=True)
         best_acc = 0.0
         since = time()
@@ -170,7 +234,8 @@ class Distiller(nn.Module):
         
         optimizer = optim.Adam(self.student.parameters(), lr=0.0001, 
                                betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=2, verbose=True)
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, 
+                                                   patience=2, verbose=True)
         
         #NOTE train all layers of model
         self.student, best_acc = train_kd(loaders, dataset_sizes, device,
@@ -185,3 +250,63 @@ class Distiller(nn.Module):
         
         return self.student
     
+    
+class Distiller(object):
+    def __init__(self, device:torch.device,
+                 teacher:nn.Module, teacher_name:str,
+                 student:nn.Module, student_name:str,
+                 loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int],
+                 KDcriterion:KDLoss, criterion:_Loss=nn.CrossEntropyLoss) -> None:
+        self.teacher = teacher.to(device)
+        self.teacher.__class__.__name__ = teacher_name
+        self.student = student.to(device)
+        self.student.__class__.__name__ = student_name
+        self.device = device
+        assert len(loaders) >= 2; self.loaders = loaders
+        assert len(dataset_sizes) >=2; self.dataset_sizes = dataset_sizes
+        self.S_criterion = KDcriterion.to(device)
+        self.T_criterion = criterion.to(device)
+        
+        print(Fore.RED)
+        print('Device name {}'.format(torch.cuda.get_device_name(0)), Fore.RESET)
+        
+        
+    def training_teacher(self, epochs_warmup:int, epochs:int, ckpt:int):
+        optimizer = optim.Adam(list(self.teacher.children())[-1].parameters(), lr=0.001, 
+                               betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.2, 
+                                                   patience=3, verbose=True)
+        since = time()
+        best_teacher = copy.deepcopy(self.teacher)
+        best_acc = 0.0
+        best_teacher, best_acc = train(self.loaders, self.dataset_sizes, self.device,
+                                       self.teacher, best_teacher, best_acc, 
+                                       self.T_criterion, optimizer, scheduler, 
+                                       epochs_warmup, ckpt)
+        
+        time_elapsed = time() - since
+        print('CLASSIFIER TRAINING TIME {} : {:.3f}'.format(
+            time_elapsed//60, time_elapsed % 60))
+        print_msg("Unfreeze all layers", self.teacher.__class__.__name__)
+        
+        self.teacher.load_state_dict(best_teacher.state_dict())
+        
+        # unfrezz all layer
+        for param in self.teacher.parameters():
+            param.requires_grad = True
+        
+        optimizer = optim.Adam(self.teacher.parameters(), lr=0.0001, 
+                               betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, 
+                                                   patience=2, verbose=True)
+        best_teacher, best_acc = train(self.loaders, self.dataset_sizes,
+                                       self.teacher, best_teacher, best_acc, 
+                                       self.T_criterion, optimizer, scheduler, 
+                                       epochs, ckpt)
+        
+        last_teacher = osp.join(folder_save, '{}_last.pth'.format(
+            self.teacher.__class__.__name__))
+        torch.save(best_teacher.state_dict(), last_teacher)
+        time_elapsed = time() - since
+        print('ALL NET TRAINING TIME {} m {:.3f}s'.format(
+            time_elapsed//60, time_elapsed % 60))
