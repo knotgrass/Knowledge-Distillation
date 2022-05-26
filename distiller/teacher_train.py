@@ -101,7 +101,7 @@ def training(loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int], device
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(list(teacher.children())[-1].parameters(), lr=0.001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, 
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.2, 
                                                patience=3, verbose=True)
     
     since = time()
@@ -126,7 +126,7 @@ def training(loaders:Dict[str, DataLoader], dataset_sizes:Dict[str, int], device
 
     optimizer = optim.Adam(teacher.parameters(), lr=0.0001, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, 
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, 
                                                patience=2, verbose=True)
     
     best_teacher, best_acc = train(loaders, dataset_sizes,
