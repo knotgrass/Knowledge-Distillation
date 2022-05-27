@@ -3,7 +3,6 @@ from torch import Tensor
 import torch
 
 
-
 def calculate_accuracy(preds:Tensor, targets:Tensor) -> float:
     return 1.*torch.sum(preds == targets.data) / preds.size(0)
 
@@ -32,5 +31,3 @@ class MetricMonitor:
                 for (metric_name, metric) in self.metrics.items()
             ]
         )
-
-
