@@ -1,14 +1,12 @@
-import os
 import os.path as osp
-import pickle, re
+import pickle
 from tqdm import tqdm
 from PIL import Image
-from typing import Any, Callable, Optional, Tuple, Dict, List, cast
-from torch import Tensor
+from typing import Any, Callable, Optional, Tuple, List
+from torch import Tensor, nn
 import numpy as np
 import cv2
 import torch
-import torch.nn as nn
 import torchvision.transforms as T
 import albumentations as A
 from torchvision.datasets import CIFAR100
@@ -63,9 +61,8 @@ class AlbumDatasetFolder(DatasetFolder):
     
 
 def albumen_loader(path:str) -> np.ndarray:
-    # fpath = os.path.join(image_dir_path, fn)
-    # img = cv2.imdecode(np.fromfile(fpath), cv2.IMREAD_COLOR)
-    # img = cv2.imread(fpath)
+    # img = cv2.imdecode(np.fromfile(path), cv2.IMREAD_COLOR)
+    # return cv2.cvtColor(cv2.imread(path), 4)
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 class AlbumImageFolder(AlbumDatasetFolder):
@@ -84,39 +81,6 @@ class AlbumImageFolder(AlbumDatasetFolder):
                                           is_valid_file=is_valid_file)
         self.imgs = self.samples
 
-"""
-class AlbumImageFolder(ImageFolder):
-    def __init__(
-            self,
-            root: str,
-            transform: Optional[Callable] = None,
-            target_transform: Optional[Callable] = None,
-            loader: Callable[[str], Any] = albumen_loader,
-            is_valid_file: Optional[Callable[[str], bool]] = None,
-    ):
-        super(AlbumImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
-                                          transform=transform,
-                                          target_transform=target_transform,
-                                          is_valid_file=is_valid_file)
-        self.imgs = self.samples
-
-    def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        
-        # Args:
-        #     index (int): Index
-
-        # Returns:
-        #     tuple: (sample, target) where target is class_index of the target class.
-        
-        path, target = self.samples[index]
-        sample = self.loader(path)
-        if self.transform is not None:
-            sample = self.transform(image=sample)['image']
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return sample, target
-"""
 
 class AlbumImageFolder_forKD(DatasetFolder):
     r"""
@@ -177,11 +141,11 @@ class AlbumImageFolder_forKD(DatasetFolder):
 
         teacher.to(device)
         self.soft_labels = []   #NOTE output of teacher
-        with tqdm(self.samples, ncols=128, colour='YELLOW') as progress:
+        with tqdm(self.samples, ncols=128, colour='YELLOW') as stream:
             for imgp, target in self.samples:
-                ext = '.' + osp.basename(imgp).split('.')[-1]
-                # https://tinyurl.com/yeyvz728
-                soft_label_path = re.sub('{}$'.format(ext), '.npz', imgp)
+                datap, ext = imgp.rsplit('.', maxsplit=1)
+                soft_label_path = datap + '.npz'
+
                 if osp.isfile(soft_label_path):
                     soft_label = np.load(soft_label_path)   #FIXME
                     self.soft_labels.append(soft_label)
@@ -189,9 +153,9 @@ class AlbumImageFolder_forKD(DatasetFolder):
                     soft_label = self._imgp_to_softlabel(teacher, imgp, device)
                     np.save(soft_label_path, soft_label)    #FIXME
                     self.soft_labels.append(soft_label)
-                progress.update()
+                stream.update()
         
-    def __getitem__(self, index: int) -> Tuple[Tensor, Any, Tensor]:
+    def __getitem__(self, index: int) -> Tuple[Tensor, Any, Tensor, bool]:
         r"""
         Args:
             index (int): Index
