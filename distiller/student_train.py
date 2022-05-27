@@ -86,13 +86,6 @@ def train_kd(student:nn.Module, teacher:nn.Module, best_acc:float=0.0,
 def training_kd(student:nn.Module, teacher:nn.Module, 
                 epochs_freeze:int = 8, epochs_unfreeze:int = 12, 
                 path_save_weight:str=None):
-    
-    if path_save_weight is None:
-        if osp.isdir('Weights'): os.makedirs('Weights')
-        path_save_weight = osp.join(
-            'Weights', student.__class__.__name__ + '.pth')
-    print('Training {} using {}'.format(
-        student.__class__.__name__, torch.cuda.get_device_name(0)))
 
     student.to(device); teacher.to(device).eval()
     criterion = loss_fn_kd
