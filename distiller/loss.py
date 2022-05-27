@@ -2,7 +2,7 @@
 
 import torch.nn.functional as F
 from torch.nn.modules.loss import _Loss
-from torch import Tensor
+from torch import Tensor, nn
 import numpy as np
 
 # hyperparameters for KD
@@ -25,7 +25,7 @@ def loss_fn_kd(preds: Tensor, labels: Tensor, teacher_preds: Tensor,
 
 class KDLoss(_Loss):
     def __init__(self, T: float, alpha: float, reduction: str = 'batchmean') -> None:
-        super().__init__()
+        super().__init__(reduction=reduction)
         self.temperature = T
         self.alpha = alpha
         self.gamma = T * T * alpha
@@ -40,3 +40,28 @@ class KDLoss(_Loss):
 
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
+
+
+class LabelSmoothingCrossEntropy(_Loss):
+    r"""
+        criterion = LabelSmoothingCrossEntropy()
+        for outputs, targets in dataloader:
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+    """
+    
+    def __init__(self, reduction: str = 'mean'):
+        super(LabelSmoothingCrossEntropy, self).__init__(reduction=reduction)
+        
+    def forward(self, x, target, smoothing=0.1):
+        confidence = 1. - smoothing
+        logprobs = F.log_softmax(x, dim=-1)
+        nll_loss = -logprobs.gather(dim=-1, index=target.unsqueeze(1))
+        nll_loss = nll_loss.squeeze(1)
+        smooth_loss = -logprobs.mean(dim=-1)
+        loss = confidence * nll_loss + smoothing * smooth_loss
+        return loss.mean()
+    
