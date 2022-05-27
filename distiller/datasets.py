@@ -68,7 +68,6 @@ def albumen_loader(path:str) -> np.ndarray:
     # img = cv2.imread(fpath)
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
-
 class AlbumImageFolder(AlbumDatasetFolder):
     
     def __init__(
@@ -217,6 +216,25 @@ class AlbumImageFolder_forKD(DatasetFolder):
             target = self.target_transform(target)
         
         return sample, target, soft_label, is_aug
+    
+
+class MixupImageFolder(DatasetFolder):
+    # TODO implement dataset to using mixup aug
+    # REF https://tinyurl.com/4dyv2sy3
+    
+    def __init__(
+            self,
+            root: str,
+            loader: Callable[[str], Any] = albumen_loader,
+            extensions: Optional[Tuple[str, ...]] = None,
+            transform: Optional[Callable] = None,
+            target_transform: Optional[Callable] = None,
+            is_valid_file: Optional[Callable[[str], bool]] = None,
+    ) -> None:
+        ...
+        
+    def __getitem__(self, index: int) -> Tuple[Any, Any]: 
+        ...
     
     
 class CIFAR100_ForKD(CIFAR100):
