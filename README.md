@@ -11,6 +11,8 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
     * https://keras.io/examples/vision/knowledge_distillation/
     * https://github.com/SforAiDl/KD_Lib/blob/master/README.md
     * https://intellabs.github.io/distiller/knowledge_distillation.html#hinton-et-al-2015
+    * https://viblo.asia/p/paper-explain-thu-thuat-cho-cac-mang-cnn-trong-classification-LzD5dRMoZjY
+
 
 #### Compare
     * optimize speed and memory
@@ -29,3 +31,5 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [ ] write Distiller like keras template
 - [x] [Augmentation](https://journalofbigdata.springeropen.com/articles/10.1186/s40537-019-0197-0) using [albumentation](https://github.com/albumentations-team/albumentations) 
 - [ ] using [augmentor](https://github.com/mdbloice/Augmentor)
+- [ ] implement mixup: dataset and function aug, ref timm
+- [ ] implement [Label smoothing] (https://github.com/seominseok0429/label-smoothing-visualization-pytorch.git) template to using target transform in dataset
