@@ -12,7 +12,7 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
     * https://github.com/SforAiDl/KD_Lib/blob/master/README.md
     * https://intellabs.github.io/distiller/knowledge_distillation.html#hinton-et-al-2015
     * https://viblo.asia/p/paper-explain-thu-thuat-cho-cac-mang-cnn-trong-classification-LzD5dRMoZjY
-
+    * [KD: A good teacher is patient and consistent](https://github.com/google-research/big_transfer)
 
 #### Compare
     * optimize speed and memory
