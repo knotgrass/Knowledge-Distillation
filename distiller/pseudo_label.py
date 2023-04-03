@@ -15,6 +15,9 @@ vẫn đảm bảo vector `y` tuân theo normal distribution
 `các phần từ còn lại -> 0 ` tiến đến 0
 
 4. Train với nhãn có phần tử nhỏ hơn 0. Ví dụ: [0.1, -0.3, 0.2, ]
+
+5. Ý tưởng khác, gen normal distribution với gaussian function, a, b thay đổi, 
+sau đó sắp xếp lại theo thứ tự ban đầu
 """
 "https://pytorch.org/docs/stable/distributions.html#normal"
 
