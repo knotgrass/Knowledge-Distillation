@@ -32,4 +32,5 @@ Implementation of Distilling the Knowledge in a Neural Network https://arxiv.org
 - [x] [Augmentation](https://journalofbigdata.springeropen.com/articles/10.1186/s40537-019-0197-0) using [albumentation](https://github.com/albumentations-team/albumentations) 
 - [ ] using [augmentor](https://github.com/mdbloice/Augmentor)
 - [ ] implement mixup: dataset and function aug, ref timm
-- [ ] implement [Label smoothing](https://github.com/seominseok0429/label-smoothing-visualization-pytorch.git) template to using target transform in dataset
+- [x] implement [Label smoothing](https://github.com/seominseok0429/label-smoothing-visualization-pytorch.git) template to using target transform in dataset
+- [ ] prove that increase `smoothing=0.1` reduces the `variance` / `std`
