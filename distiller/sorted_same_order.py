@@ -1,6 +1,8 @@
 import torch
 import numpy as np
 
+def get_order(nums):
+    return [idx for idx, _ in sorted(enumerate(nums), key=lambda x: x[-1])]
 
 def check_same_order(num1:list, num2:list) -> bool:
     def compare_list(l1:list, l2:list) -> bool:
@@ -25,10 +27,24 @@ def check_same_order(num1:list, num2:list) -> bool:
     if not compare_list(x1_pair, x1): 
         return False
     
+    def check_order(nums) -> bool:
+        # check theo đảm bảo các phan tử theo thứ tự từ nhỏ đến lớn
+        order = get_order(nums)
+        left = nums[order[0]]
+        for idx in order[1:]:
+            right = nums[idx]
+            if left > right:
+                return False
+            left = right
+        return True
+    
+    if not check_order(num1):
+        return False
+    if not check_order(num2):
+        return False
+    
     return True
 
-def get_order(nums):
-    return [idx for idx, _ in sorted(enumerate(nums), key=lambda x: x[-1])]
 
 def sort_by_order(nums1, nums2):
     assert len(nums1) == len(nums2)
@@ -43,8 +59,8 @@ def sort_by_order(nums1, nums2):
 num1 = [ 1, 1, 4,  0, 1, 2,  2, 0, 5]
 num2 = [ 0, 1, 1,  0, 1, 2,  2, 0, 1]
 
-num1 = torch.tensor(num1)
-num2 = torch.tensor(num2)
+# num1 = torch.tensor(num1)
+# num2 = torch.tensor(num2)
 rs1 = sort_by_order(num1, num2)
 print(rs1)
 print(check_same_order(num1, rs1))
