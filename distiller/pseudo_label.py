@@ -21,16 +21,32 @@ sau đó sắp xếp lại theo thứ tự ban đầu
 """
 "https://pytorch.org/docs/stable/distributions.html#normal"
 
-
-import torch
+import torch, math
 from torch.distributions import Normal
+import torch.nn.functional as F
 
-num_class = 10
-mu = 1. / num_class
-
-sigma = 1. # std
-m = Normal(loc=mu, scale=sigma)
+mean = torch.tensor(0.1, dtype=torch.float32)
+std = torch.tensor(0.2667, dtype=torch.float32)
+m = Normal(loc=mean, scale=std)
 y = m.sample((10,))
 
 print(y.shape)
 print(y)
+
+
+def mean_std(x:torch.Tensor) -> tuple:
+    x = x.to(torch.float32)
+    mean = torch.mean(x)
+    std = torch.std(x, correction=0)
+    print('mean = ',mean)
+    print('std = ',std)
+    return mean, std
+
+x = F.one_hot(torch.arange(1,), num_classes=10).reshape(-1)
+print(x)
+
+onehot_mean, onehot_std = mean_std(x)
+y = torch.tensor([0.9, 0.1/9, 0.1/9, 0.1/9, 0.1/9, 0.1/9, 0.1/9, 0.1/9, 0.1/9, 0.1/9], dtype=torch.float32)
+
+print('\n\n')
+mean_std(y)
