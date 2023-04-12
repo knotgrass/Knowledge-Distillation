@@ -53,14 +53,15 @@ class Y_normal(object):
         #num_classes= 100 ;   0 <= std <= 0.0995
         #num_classes= 1000;   0 <= std <= 0.0316
         self.normal = Normal(loc=self.mean, scale=self.std)
-        self.order = self.normal.sample((self.num_classes,))
+        first = self.normal.sample((self.num_classes,))
+        # self.order = torch.argsort(self.order)
+        self.order = [idx for idx, _ in sorted(enumerate(first), key=lambda x: x[-1])]
         return
     
     def sort_by_order(self, y:Tensor) -> Tensor:
         # assert len(self.order) == len(y)
         y = sorted(y)
-        order = [idx for idx, _ in sorted(enumerate(self.order), key=lambda x: x[-1])]
-        return [x for _, x in sorted(zip(order, y))]
+        return [x for _, x in sorted(zip(self.order, y))]
     
     def __call__(self, idx:int) -> Tensor:
         # FIXME thuật toán k chạy với idx, order giữ nguyên tại lần tạo đầu tiên,
