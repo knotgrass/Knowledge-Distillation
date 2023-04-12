@@ -61,7 +61,8 @@ class Y_normal(object):
     def sort_by_order(self, y:Tensor) -> Tensor:
         # assert len(self.order) == len(y)
         y = sorted(y)
-        return [x for _, x in sorted(zip(self.order, y))]
+        y = [x for _, x in sorted(zip(self.order, y))]
+        return torch.tensor(y)
     
     def __call__(self, idx:int) -> Tensor:
         # FIXME thuật toán k chạy với idx, order giữ nguyên tại lần tạo đầu tiên,
